@@ -11,6 +11,7 @@ endif
 
 ifeq ($(ARCH),win)
 	# Windows
+	LDFLAGS += -lcomdlg32
 	SOURCES += osdialog_win.c
 endif
 
