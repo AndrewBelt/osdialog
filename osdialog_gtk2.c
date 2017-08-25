@@ -32,3 +32,20 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	// while (gtk_events_pending()) gtk_main_iteration();
 	return result;
 }
+
+
+void osdialog_color_picker() {
+	assert(gtk_init_check(NULL, NULL));
+
+	GtkWidget *dialog = gtk_color_selection_dialog_new("Color");
+	GtkColorSelection *colorsel = GTK_COLOR_SELECTION(GTK_COLOR_SELECTION_DIALOG(dialog)->colorsel);
+
+	// gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION_DIALOG(dialog), true);
+
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+		GdkColor color;
+		gtk_color_selection_get_current_color(colorsel, &color);
+		// gtk_color_selection_dialog_get_color_selection(dialog);
+	}
+	gtk_widget_destroy(dialog);
+}

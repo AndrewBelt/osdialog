@@ -39,4 +39,9 @@ int main() {
 			free(filename);
 		}
 	}
+
+	// Color selector
+	{
+		osdialog_color_picker();
+	}
 }
