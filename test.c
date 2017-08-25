@@ -11,6 +11,9 @@ int main() {
 			printf("%s\n", filename);
 			free(filename);
 		}
+		else {
+			printf("Cancelled\n");
+		}
 	}
 
 	// Save file with default arguments
@@ -19,6 +22,9 @@ int main() {
 		if (filename) {
 			printf("%s\n", filename);
 			free(filename);
+		}
+		else {
+			printf("Cancelled\n");
 		}
 	}
 
@@ -29,6 +35,9 @@ int main() {
 			printf("%s\n", filename);
 			free(filename);
 		}
+		else {
+			printf("Cancelled\n");
+		}
 	}
 
 	// Save file with custom arguments
@@ -37,6 +46,9 @@ int main() {
 		if (filename) {
 			printf("%s\n", filename);
 			free(filename);
+		}
+		else {
+			printf("Cancelled\n");
 		}
 	}
 
