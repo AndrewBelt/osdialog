@@ -20,3 +20,6 @@ test: $(SOURCES)
 
 run: test
 	./test
+
+clean:
+	rm -rfv test
