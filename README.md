@@ -2,7 +2,7 @@
 
 A cross platform wrapper for OS dialogs like file save, open, message boxes, inputs, color picking, etc.
 
-Currently supports Windows and GTK2 on Linux.
+Currently supports MacOS, Windows, and GTK2 on Linux.
 
 ## Using
 

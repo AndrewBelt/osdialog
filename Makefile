@@ -15,6 +15,12 @@ ifeq ($(ARCH),win)
 	SOURCES += osdialog_win.c
 endif
 
+ifeq ($(ARCH),mac)
+	# MacOS
+	LDFLAGS += -framework AppKit
+	SOURCES += osdialog_mac.m
+endif
+
 test: $(SOURCES)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
