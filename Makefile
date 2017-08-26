@@ -2,6 +2,10 @@
 CFLAGS = -Wall -g
 SOURCES = test.c
 
+ifndef ARCH
+$(error ARCH is not defined. Run with `make ARCH=mac`, win, or lin)
+endif
+
 ifeq ($(ARCH),lin)
 	# Linux
 	CFLAGS += $(shell pkg-config --cflags gtk+-2.0)

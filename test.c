@@ -30,7 +30,7 @@ int main() {
 
 	// Open file with custom arguments
 	{
-		char *filename = osdialog_file(OSDIALOG_OPEN, ".", "Untitled", NULL);
+		char *filename = osdialog_file(OSDIALOG_OPEN, ".", "test", NULL);
 		if (filename) {
 			printf("%s\n", filename);
 			free(filename);
@@ -42,7 +42,7 @@ int main() {
 
 	// Save file with custom arguments
 	{
-		char *filename = osdialog_file(OSDIALOG_SAVE, ".", "Untitled", NULL);
+		char *filename = osdialog_file(OSDIALOG_SAVE, ".", "test", NULL);
 		if (filename) {
 			printf("%s\n", filename);
 			free(filename);
