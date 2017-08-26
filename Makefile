@@ -3,11 +3,10 @@ CFLAGS = -Wall -g
 SOURCES = test.c
 
 ifndef ARCH
-$(error ARCH is not defined. Run with `make ARCH=mac`, win, or lin)
+$(error ARCH is not defined. Run with `make ARCH=mac`, win, or gtk2)
 endif
 
-ifeq ($(ARCH),lin)
-	# Linux
+ifeq ($(ARCH),gtk2)
 	CFLAGS += $(shell pkg-config --cflags gtk+-2.0)
 	LDFLAGS += $(shell pkg-config --libs gtk+-2.0)
 	SOURCES += osdialog_gtk2.c
