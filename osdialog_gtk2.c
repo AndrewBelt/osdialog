@@ -29,7 +29,8 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	}
 	gtk_widget_destroy(dialog);
 
-	// while (gtk_events_pending()) gtk_main_iteration();
+	while (gtk_events_pending())
+		gtk_main_iteration();
 	return result;
 }
 
