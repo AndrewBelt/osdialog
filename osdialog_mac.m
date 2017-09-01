@@ -32,14 +32,14 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		NSString *path_str = [NSString stringWithUTF8String:path];
 		NSURL *path_url = [NSURL fileURLWithPath:path_str];
 		panel.directoryURL = path_url;
-		[path_url release];
-		[path_str release];
+		// [path_url release];
+		// [path_str release];
 	}
 
 	if (filename) {
 		NSString *filename_str = [NSString stringWithUTF8String:filename];
 		panel.nameFieldStringValue = filename_str;
-		[filename_str release];
+		// [filename_str release];
 	}
 
 	char *result = NULL;
@@ -55,7 +55,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		[result_url release];
 	}
 
-	[panel release];
+	// [panel release];
 	return result;
 }
 
