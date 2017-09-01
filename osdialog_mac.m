@@ -7,7 +7,8 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	NSSavePanel *panel;
 	NSOpenPanel *open_panel;
 
-	// Memory leaks everywhere. Someone please help!
+	// No idea how to manage memory with Objective C. Please help!
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
 	if (action == OSDIALOG_OPEN) {
 		open_panel = [NSOpenPanel openPanel];
@@ -52,10 +53,11 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	if ([panel runModal] == OK) {
 		NSURL *result_url = [panel URL];
 		result = strdup([[result_url path] UTF8String]);
-		[result_url release];
+		// [result_url release];
 	}
 
 	// [panel release];
+	[pool release];
 	return result;
 }
 
