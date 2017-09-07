@@ -10,7 +10,7 @@ extern "C" {
 
 typedef enum {
 	OSDIALOG_OPEN,
-	OSDIALOG_OPEN_DIR, // TODO not yet supported
+	OSDIALOG_OPEN_DIR,
 	OSDIALOG_SAVE,
 } osdialog_file_action;
 

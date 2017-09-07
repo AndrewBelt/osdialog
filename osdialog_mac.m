@@ -10,7 +10,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	// No idea how to manage memory with Objective C. Please help!
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	if (action == OSDIALOG_OPEN) {
+	if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
 		open_panel = [NSOpenPanel openPanel];
 		panel = open_panel;
 	}
@@ -27,6 +27,11 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		open_panel.allowsMultipleSelection = NO;
 		open_panel.canChooseDirectories = NO;
 		open_panel.canChooseFiles = YES;
+	}
+	else if (action == OSDIALOG_OPEN_DIR) {
+		open_panel.allowsMultipleSelection = NO;
+		open_panel.canChooseDirectories = YES;
+		open_panel.canChooseFiles = NO;
 	}
 
 	if (path) {
