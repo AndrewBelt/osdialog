@@ -46,7 +46,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		ofn.lpstrFile = strFile;
 		ofn.nMaxFile = sizeof(strFile);
 		ofn.lpstrInitialDir = strInitialDir;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 		BOOL success;
 		if (action == OSDIALOG_OPEN)
