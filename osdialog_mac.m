@@ -23,13 +23,16 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	// Thanks Dave!
 	[panel setLevel:CGShieldingWindowLevel()];
 
-	if (action == OSDIALOG_OPEN) {
+	if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
+		open_panel.canCreateDirectories = YES;
 		open_panel.allowsMultipleSelection = NO;
+		open_panel.allowsMultipleSelection = NO;
+	}
+	if (action == OSDIALOG_OPEN) {
 		open_panel.canChooseDirectories = NO;
 		open_panel.canChooseFiles = YES;
 	}
 	else if (action == OSDIALOG_OPEN_DIR) {
-		open_panel.allowsMultipleSelection = NO;
 		open_panel.canChooseDirectories = YES;
 		open_panel.canChooseFiles = NO;
 	}
