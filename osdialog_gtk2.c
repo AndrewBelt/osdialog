@@ -6,12 +6,31 @@
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, const char *filters) {
 	assert(gtk_init_check(NULL, NULL));
 
+	GtkFileChooserAction gtkAction;
+	const char *title;
+	const char *acceptText;
+	if (action == OSDIALOG_OPEN) {
+		title = "Open File";
+		acceptText = "Open";
+		gtkAction = GTK_FILE_CHOOSER_ACTION_OPEN;
+	}
+	else if (action == OSDIALOG_OPEN_DIR) {
+		title = "Open Folder";
+		acceptText = "Open Folder";
+		gtkAction = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+	}
+	else {
+		title = "Save File";
+		acceptText = "Save";
+		gtkAction = GTK_FILE_CHOOSER_ACTION_SAVE;
+	}
+
 	GtkWidget *dialog = gtk_file_chooser_dialog_new(
-		action == OSDIALOG_OPEN ? "Open File" : "Save File",
+		title,
 		NULL,
-		action == OSDIALOG_OPEN ? GTK_FILE_CHOOSER_ACTION_OPEN : GTK_FILE_CHOOSER_ACTION_SAVE,
+		gtkAction,
 		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-		action == OSDIALOG_OPEN ? GTK_STOCK_OPEN : GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+		acceptText, GTK_RESPONSE_ACCEPT,
 		NULL);
 
 	if (action == OSDIALOG_SAVE)
