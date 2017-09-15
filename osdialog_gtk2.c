@@ -3,6 +3,45 @@
 #include <gtk/gtk.h>
 
 
+
+int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message) {
+	assert(gtk_init_check(NULL, NULL));
+
+	GtkMessageType messageType;
+	switch (level) {
+		default:
+		case OSDIALOG_INFO: messageType = GTK_MESSAGE_INFO; break;
+		case OSDIALOG_WARNING: messageType = GTK_MESSAGE_WARNING; break;
+		case OSDIALOG_ERROR: messageType = GTK_MESSAGE_ERROR; break;
+	}
+
+	GtkButtonsType buttonsType;
+	switch (buttons) {
+		default:
+		case OSDIALOG_OK: buttonsType = GTK_BUTTONS_OK; break;
+		case OSDIALOG_OK_CANCEL: buttonsType = GTK_BUTTONS_OK_CANCEL; break;
+		case OSDIALOG_YES_NO: buttonsType = GTK_BUTTONS_YES_NO; break;
+	}
+
+	GtkWidget *dialog = gtk_message_dialog_new (NULL,
+		0,
+		messageType,
+		buttonsType,
+		"%s", message);
+
+	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+
+	switch (result) {
+		case GTK_RESPONSE_OK:
+		case GTK_RESPONSE_YES:
+			return 1;
+		default:
+			return 0;
+	}
+}
+
+
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, const char *filters) {
 	assert(gtk_init_check(NULL, NULL));
 

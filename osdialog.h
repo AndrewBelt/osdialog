@@ -9,6 +9,22 @@ extern "C" {
 
 
 typedef enum {
+	OSDIALOG_INFO,
+	OSDIALOG_WARNING,
+	OSDIALOG_ERROR,
+} osdialog_message_level;
+
+typedef enum {
+	OSDIALOG_OK,
+	OSDIALOG_OK_CANCEL,
+	OSDIALOG_YES_NO,
+} osdialog_message_buttons;
+
+/** Launches a message box */
+int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message);
+
+
+typedef enum {
 	OSDIALOG_OPEN,
 	OSDIALOG_OPEN_DIR,
 	OSDIALOG_SAVE,

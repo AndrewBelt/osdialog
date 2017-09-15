@@ -4,6 +4,12 @@
 
 
 int main() {
+	// Message
+	{
+		printf("%d\n", osdialog_message(OSDIALOG_INFO, OSDIALOG_OK, "Info"));
+		printf("%d\n", osdialog_message(OSDIALOG_WARNING, OSDIALOG_OK_CANCEL, "Warning"));
+		printf("%d\n", osdialog_message(OSDIALOG_ERROR, OSDIALOG_YES_NO, "Error"));
+	}
 	// Open file with default arguments
 	{
 		char *filename = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
@@ -12,7 +18,7 @@ int main() {
 			free(filename);
 		}
 		else {
-			printf("Cancelled\n");
+			printf("Canceled\n");
 		}
 	}
 
@@ -24,7 +30,7 @@ int main() {
 			free(filename);
 		}
 		else {
-			printf("Cancelled\n");
+			printf("Canceled\n");
 		}
 	}
 
@@ -36,7 +42,7 @@ int main() {
 			free(filename);
 		}
 		else {
-			printf("Cancelled\n");
+			printf("Canceled\n");
 		}
 	}
 
@@ -48,7 +54,7 @@ int main() {
 			free(filename);
 		}
 		else {
-			printf("Cancelled\n");
+			printf("Canceled\n");
 		}
 	}
 
@@ -60,7 +66,7 @@ int main() {
 			free(filename);
 		}
 		else {
-			printf("Cancelled\n");
+			printf("Canceled\n");
 		}
 	}
 
@@ -72,7 +78,7 @@ int main() {
 			free(filename);
 		}
 		else {
-			printf("Cancelled\n");
+			printf("Canceled\n");
 		}
 	}
 
