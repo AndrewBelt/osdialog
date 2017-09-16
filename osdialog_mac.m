@@ -8,9 +8,15 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 	switch (level) {
 		default:
+#ifdef __MAC_10_12
 		case OSDIALOG_INFO: [alert setAlertStyle:NSAlertStyleInformational]; break;
 		case OSDIALOG_WARNING: [alert setAlertStyle:NSAlertStyleWarning]; break;
 		case OSDIALOG_ERROR: [alert setAlertStyle:NSAlertStyleCritical]; break;
+#else
+		case OSDIALOG_INFO: [alert setAlertStyle:NSInformationalAlertStyle]; break;
+		case OSDIALOG_WARNING: [alert setAlertStyle:NSWarningAlertStyle]; break;
+		case OSDIALOG_ERROR: [alert setAlertStyle:NSCriticalAlertStyle]; break;
+#endif
 	}
 
 	switch (buttons) {
