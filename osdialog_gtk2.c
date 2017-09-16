@@ -32,6 +32,9 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 
+	while (gtk_events_pending())
+		gtk_main_iteration();
+
 	switch (result) {
 		case GTK_RESPONSE_OK:
 		case GTK_RESPONSE_YES:
