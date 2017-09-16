@@ -22,6 +22,7 @@ ifeq ($(ARCH),mac)
 	# MacOS
 	LDFLAGS += -framework AppKit
 	SOURCES += osdialog_mac.m
+	# CFLAGS += -mmacosx-version-min=10.7
 endif
 
 test: $(SOURCES)

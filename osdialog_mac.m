@@ -3,6 +3,48 @@
 #include <Availability.h>
 
 
+int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message) {
+	NSAlert *alert = [[NSAlert alloc] init];
+
+	switch (level) {
+		default:
+		case OSDIALOG_INFO: [alert setAlertStyle:NSAlertStyleInformational]; break;
+		case OSDIALOG_WARNING: [alert setAlertStyle:NSAlertStyleWarning]; break;
+		case OSDIALOG_ERROR: [alert setAlertStyle:NSAlertStyleCritical]; break;
+	}
+
+	switch (buttons) {
+		default:
+		case OSDIALOG_OK:
+			[alert addButtonWithTitle:@"OK"];
+			break;
+		case OSDIALOG_OK_CANCEL:
+			[alert addButtonWithTitle:@"OK"];
+			[alert addButtonWithTitle:@"Cancel"];
+			break;
+		case OSDIALOG_YES_NO:
+			[alert addButtonWithTitle:@"Yes"];
+			[alert addButtonWithTitle:@"No"];
+			break;
+	}
+
+	NSString *messageString = [NSString stringWithUTF8String:message];
+	// [alert setInformativeText:messageString];
+	[alert setMessageText:messageString];
+
+	int result;
+	if ([alert runModal] == NSAlertFirstButtonReturn) {
+		result = 1;
+	}
+	else {
+		result = 0;
+	}
+
+	[alert release];
+	return result;
+}
+
+
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, const char *filters) {
 	NSSavePanel *panel;
 	NSOpenPanel *open_panel;
@@ -45,9 +87,9 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	}
 
 	if (filename) {
-		NSString *filename_str = [NSString stringWithUTF8String:filename];
-		panel.nameFieldStringValue = filename_str;
-		// [filename_str release];
+		NSString *filenameString = [NSString stringWithUTF8String:filename];
+		panel.nameFieldStringValue = filenameString;
+		// [filenameString release];
 	}
 
 	char *result = NULL;
