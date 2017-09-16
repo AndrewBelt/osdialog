@@ -5,6 +5,32 @@
 #include <shlobj.h>
 
 
+int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message) {
+	UINT type = 0;
+	switch (level) {
+		default:
+		case OSDIALOG_INFO: type |= MB_ICONINFORMATION; break;
+		case OSDIALOG_WARNING: type |= MB_ICONWARNING; break;
+		case OSDIALOG_ERROR: type |= MB_ICONERROR; break;
+	}
+
+	switch (buttons) {
+		default:
+		case OSDIALOG_OK: type |= MB_OK; break;
+		case OSDIALOG_OK_CANCEL: type |= MB_OKCANCEL; break;
+		case OSDIALOG_YES_NO: type |= MB_YESNO; break;
+	}
+
+	int result = MessageBox(NULL, message, "world", type);
+	switch (result) {
+		case IDOK:
+		case IDYES:
+			return 1;
+		default:
+			return 0;
+	}
+}
+
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, const char *filters) {
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
