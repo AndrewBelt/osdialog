@@ -20,7 +20,9 @@ typedef enum {
 	OSDIALOG_YES_NO,
 } osdialog_message_buttons;
 
-/** Launches a message box */
+/** Launches a message box
+Returns 1 if the "OK" or "Yes" button was pressed
+*/
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message);
 
 
@@ -30,12 +32,12 @@ typedef enum {
 	OSDIALOG_SAVE,
 } osdialog_file_action;
 
-/** Launches a file dialog and returns the selected path
+/** Launches a file dialog and returns the selected path or NULL if nothing was selected
 If the return result is not NULL, caller must free() it
 
 `path` is the default folder the file dialog will attempt to open in.
 `filename` is the default text that will appear in the filename input. Relevant to save dialog only.
-`filters` is not supported yet TODO
+`filters` is not supported yet on any platform TODO
 */
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, const char *filters);
 
@@ -44,8 +46,13 @@ typedef struct {
 	uint8_t r, g, b, a;
 } osdialog_color;
 
-// TODO
-void osdialog_color_picker();
+/** Launches an RGBA color picker dialog and sets `color` to the selected color
+Returns 1 if "OK" was pressed
+
+`color` should be set to the initial color before calling. It is only overwritten if the user selects "OK".
+`opacity` enables the opacity slider by setting to 1
+*/
+int osdialog_color_picker(osdialog_color *color, int opacity);
 
 
 #ifdef __cplusplus

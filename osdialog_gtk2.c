@@ -96,18 +96,29 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 }
 
 
-void osdialog_color_picker() {
+int osdialog_color_picker(osdialog_color *color, int opacity) {
+	if (!color)
+		return 0;
 	assert(gtk_init_check(NULL, NULL));
 
 	GtkWidget *dialog = gtk_color_selection_dialog_new("Color");
-	GtkColorSelection *colorsel = GTK_COLOR_SELECTION(GTK_COLOR_SELECTION_DIALOG(dialog)->colorsel);
+	GtkColorSelection *colorsel = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(dialog)));
 
-	// gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION_DIALOG(dialog), true);
+	gtk_color_selection_set_has_opacity_control(colorsel, opacity);
 
-	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-		GdkColor color;
-		gtk_color_selection_get_current_color(colorsel, &color);
-		// gtk_color_selection_dialog_get_color_selection(dialog);
+	int result = 0;
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+		GdkColor c;
+		gtk_color_selection_get_current_color(colorsel, &c);
+		color->r = c.red >> 8;
+		color->g = c.green >> 8;
+		color->b = c.blue >> 8;
+		color->a = gtk_color_selection_get_current_alpha(colorsel) >> 8;
+		result = 1;
 	}
 	gtk_widget_destroy(dialog);
+
+	while (gtk_events_pending())
+		gtk_main_iteration();
+	return result;
 }
