@@ -117,10 +117,20 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 }
 
 
-void osdialog_color_picker() {
+int osdialog_color_picker(osdialog_color *color, int opacity) {
+	assert(0);
+
+	// TODO I have no idea what I'm doing here
 	NSColorPanel *panel = [NSColorPanel sharedColorPanel];
+	// [panel setDelegate:self];
 	[panel isVisible];
-	// [panel setShowAlpha:NO];
-	// NSColorWell *well = ;
-	// well.color = [NSColor randomColor];
+
+	// if (opacity)
+	// 	[panel setShowAlpha:YES];
+	// else
+	// 	[panel setShowAlpha:NO];
+
+	// [panel makeKeyAndOrderFront:self];
+
+	return 0;
 }
