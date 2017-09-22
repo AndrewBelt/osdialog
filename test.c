@@ -4,7 +4,6 @@
 
 
 int main() {
-	/*
 	// Message
 	{
 		printf("%d\n", osdialog_message(OSDIALOG_INFO, OSDIALOG_OK, "Info"));
@@ -83,7 +82,6 @@ int main() {
 			printf("Canceled\n");
 		}
 	}
-	*/
 
 	// Color selector
 	{

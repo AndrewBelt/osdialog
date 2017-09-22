@@ -50,7 +50,9 @@ typedef struct {
 Returns 1 if "OK" was pressed
 
 `color` should be set to the initial color before calling. It is only overwritten if the user selects "OK".
-`opacity` enables the opacity slider by setting to 1
+`opacity` enables the opacity slider by setting to 1. Not supported on Windows.
+
+TODO Implement on Mac
 */
 int osdialog_color_picker(osdialog_color *color, int opacity);
 

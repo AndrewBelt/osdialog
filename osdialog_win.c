@@ -21,7 +21,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 		case OSDIALOG_YES_NO: type |= MB_YESNO; break;
 	}
 
-	int result = MessageBox(NULL, message, "world", type);
+	int result = MessageBox(NULL, message, "", type);
 	switch (result) {
 		case IDOK:
 		case IDYES:
@@ -87,15 +87,28 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 }
 
 
-void osdialog_color_picker() {
+int osdialog_color_picker(osdialog_color *color, int opacity) {
+	if (!color)
+		return 0;
+
 	CHOOSECOLOR cc;
 	ZeroMemory(&cc, sizeof(cc));
 
+	COLORREF c = RGB(color->r, color->g, color->b);
 	static COLORREF acrCustClr[16];
 
 	cc.lStructSize = sizeof(cc);
 	cc.lpCustColors = (LPDWORD) acrCustClr;
-	cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+	cc.rgbResult = c;
+	cc.Flags = CC_FULLOPEN | CC_ANYCOLOR | CC_RGBINIT;
 
-	ChooseColor(&cc);
+	if (ChooseColor(&cc)) {
+		color->r = GetRValue(cc.rgbResult);
+		color->g = GetGValue(cc.rgbResult);
+		color->b = GetBValue(cc.rgbResult);
+		color->a = 255;
+		return 1;
+	}
+
+	return 0;
 }
