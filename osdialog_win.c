@@ -31,7 +31,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	}
 }
 
-char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, const char *filters) {
+char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
 		TCHAR szDir[MAX_PATH] = "";
@@ -67,12 +67,29 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		char *strInitialDir = path ? strdup(path) : NULL;
 
 		ofn.lStructSize = sizeof(ofn);
-		// ofn.lpstrFilter = filters;
-		// ofn.nFilterIndex = 1;
 		ofn.lpstrFile = strFile;
 		ofn.nMaxFile = sizeof(strFile);
 		ofn.lpstrInitialDir = strInitialDir;
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+		if (filters) {
+			char fBuf[4096];
+			int fLen = 0;
+
+			for (; filters; filters = filters->next) {
+				fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "%s", filters->name);
+				fLen++;
+				for (osdialog_filter_patterns *patterns = filters->patterns; patterns; patterns = patterns->next) {
+					fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "*.%s", patterns->pattern);
+					if (patterns->next)
+						fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, ";");
+				}
+				fLen++;
+			}
+
+			ofn.lpstrFilter = fBuf;
+			ofn.nFilterIndex = 1;
+		}
 
 		BOOL success;
 		if (action == OSDIALOG_OPEN)
