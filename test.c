@@ -60,7 +60,7 @@ int main() {
 	// Open file with custom arguments
 	if (1) {
 		printf("file open in cwd\n");
-		osdialog_filters *filters = osdialog_filters_parse("Source:*.c,*.cpp,*.m;Header:*.h,*.hpp");
+		osdialog_filters *filters = osdialog_filters_parse("Source:c,cpp,m;Header:h,hpp");
 		char *filename = osdialog_file(OSDIALOG_OPEN, ".", "test", filters);
 		if (filename) {
 			printf("\t%s\n", filename);

@@ -55,7 +55,7 @@ If the return result is not NULL, caller must free() it
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters);
 
 /** Parses a filter string of the form
-	Source:*.c,*.cpp,*.m;Header:*.h,*.hpp
+	Source:c,cpp,m;Header:h,hpp
 Caller must eventually free with osdialog_filters_free()
 */
 osdialog_filters *osdialog_filters_parse(const char *str);

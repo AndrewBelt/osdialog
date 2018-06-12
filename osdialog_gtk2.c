@@ -80,7 +80,9 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		GtkFileFilter *fileFilter = gtk_file_filter_new();
 		gtk_file_filter_set_name(fileFilter, filters->name);
 		for (osdialog_filter_patterns *patterns = filters->patterns; patterns; patterns = patterns->next) {
-			gtk_file_filter_add_pattern(fileFilter, patterns->pattern);
+			char patternBuf[1024];
+			snprintf(patternBuf, sizeof(patternBuf), "*.%s", patterns->pattern);
+			gtk_file_filter_add_pattern(fileFilter, patternBuf);
 		}
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), fileFilter);
 	}
