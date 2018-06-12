@@ -51,7 +51,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 }
 
 
-char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, const char *filters) {
+char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
 	NSSavePanel *panel;
 	NSOpenPanel *open_panel;
 
@@ -71,6 +71,20 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	// Thanks Dave!
 	[panel setLevel:CGShieldingWindowLevel()];
 
+	if (filters) {
+		NSMutableArray *fileTypes = [[NSMutableArray alloc] init];
+		
+		for (; filters; filters = filters->next) {
+			for (osdialog_filter_patterns *patterns = filters->patterns; patterns; patterns = patterns->next) {
+				NSString *fileType = [NSString stringWithUTF8String:patterns->pattern];
+				[fileTypes addObject:fileType];
+			}
+		}
+
+		[panel setAllowedFileTypes:fileTypes];
+		// [fileTypes release];
+	}
+
 	if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
 		open_panel.allowsMultipleSelection = NO;
 	}
@@ -78,7 +92,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		open_panel.canChooseDirectories = NO;
 		open_panel.canChooseFiles = YES;
 	}
-	else if (action == OSDIALOG_OPEN_DIR) {
+	if (action == OSDIALOG_OPEN_DIR) {
 		open_panel.canCreateDirectories = YES;
 		open_panel.canChooseDirectories = YES;
 		open_panel.canChooseFiles = NO;
