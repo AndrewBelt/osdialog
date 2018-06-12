@@ -1,10 +1,12 @@
 
-CFLAGS = -Wall -g
+CFLAGS = -std=c99 -Wall -g
 SOURCES = test.c
 
 ifndef ARCH
 $(error ARCH is not defined. Run with `make ARCH=mac`, win, or gtk2)
 endif
+
+SOURCES += osdialog.c
 
 ifeq ($(ARCH),gtk2)
 	CFLAGS += $(shell pkg-config --cflags gtk+-2.0)
@@ -22,7 +24,7 @@ ifeq ($(ARCH),mac)
 	# MacOS
 	LDFLAGS += -framework AppKit
 	SOURCES += osdialog_mac.m
-	# CFLAGS += -mmacosx-version-min=10.7
+	CFLAGS += -mmacosx-version-min=10.7
 endif
 
 test: $(SOURCES)

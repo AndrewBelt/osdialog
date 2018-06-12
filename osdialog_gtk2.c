@@ -1,5 +1,6 @@
 #include "osdialog.h"
 #include <assert.h>
+#include <string.h>
 #include <gtk/gtk.h>
 
 
@@ -45,7 +46,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 }
 
 
-char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, const char *filters) {
+char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
 	assert(gtk_init_check(NULL, NULL));
 
 	GtkFileChooserAction gtkAction;
@@ -74,6 +75,15 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 		acceptText, GTK_RESPONSE_ACCEPT,
 		NULL);
+
+	for (; filters; filters = filters->next) {
+		GtkFileFilter *fileFilter = gtk_file_filter_new();
+		gtk_file_filter_set_name(fileFilter, filters->name);
+		for (osdialog_filter_patterns *patterns = filters->patterns; patterns; patterns = patterns->next) {
+			gtk_file_filter_add_pattern(fileFilter, patterns->pattern);
+		}
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), fileFilter);
+	}
 
 	if (action == OSDIALOG_SAVE)
 		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
