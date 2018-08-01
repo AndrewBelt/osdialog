@@ -5,14 +5,14 @@
 
 
 static char *strndup_better(const char *s, int n) {
-	char *d = malloc(n + 1);
+	char *d = OSDIALOG_MALLOC(n + 1);
 	memcpy(d, s, n);
 	d[n] = '\0';
 	return d;
 }
 
 osdialog_filters *osdialog_filters_parse(const char *str) {
-	osdialog_filters *filters_head = malloc(sizeof(osdialog_filters));
+	osdialog_filters *filters_head = OSDIALOG_MALLOC(sizeof(osdialog_filters));
 	filters_head->next = NULL;
 
 	osdialog_filters *filters = filters_head;
@@ -23,7 +23,7 @@ osdialog_filters *osdialog_filters_parse(const char *str) {
 		switch (*str) {
 			case ':': {
 				filters->name = strndup_better(text, str - text);
-				filters->patterns = malloc(sizeof(osdialog_filter_patterns));
+				filters->patterns = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
 				patterns = filters->patterns;
 				patterns->next = NULL;
 				text = str + 1;
@@ -31,7 +31,7 @@ osdialog_filters *osdialog_filters_parse(const char *str) {
 			case ',': {
 				assert(patterns);
 				patterns->pattern = strndup_better(text, str - text);
-				patterns->next = malloc(sizeof(osdialog_filter_patterns));
+				patterns->next = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
 				patterns = patterns->next;
 				patterns->next = NULL;
 				text = str + 1;
@@ -39,7 +39,7 @@ osdialog_filters *osdialog_filters_parse(const char *str) {
 			case ';': {
 				assert(patterns);
 				patterns->pattern = strndup_better(text, str - text);
-				filters->next = malloc(sizeof(osdialog_filters));
+				filters->next = OSDIALOG_MALLOC(sizeof(osdialog_filters));
 				filters = filters->next;
 				filters->next = NULL;
 				patterns = NULL;
@@ -62,18 +62,18 @@ osdialog_filters *osdialog_filters_parse(const char *str) {
 static void patterns_free(osdialog_filter_patterns *patterns) {
 	if (!patterns)
 		return;
-	free(patterns->pattern);
+	OSDIALOG_FREE(patterns->pattern);
 	osdialog_filter_patterns *next = patterns->next;
-	free(patterns);
+	OSDIALOG_FREE(patterns);
 	patterns_free(next);
 }
 
 void osdialog_filters_free(osdialog_filters *filters) {
 	if (!filters)
 		return;
-	free(filters->name);
+	OSDIALOG_FREE(filters->name);
 	patterns_free(filters->patterns);
 	osdialog_filters *next = filters->next;
-	free(filters);
+	OSDIALOG_FREE(filters);
 	osdialog_filters_free(next);
 }

@@ -8,6 +8,19 @@ extern "C" {
 #include <stdint.h>
 
 
+#ifndef OSDIALOG_MALLOC
+	#define OSDIALOG_MALLOC malloc
+#endif
+
+#ifndef OSDIALOG_FREE
+	#define OSDIALOG_FREE free
+#endif
+
+#ifndef OSDIALOG_STRDUP
+	#define OSDIALOG_STRDUP strdup
+#endif
+
+
 typedef enum {
 	OSDIALOG_INFO,
 	OSDIALOG_WARNING,

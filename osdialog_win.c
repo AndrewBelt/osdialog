@@ -39,7 +39,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		BROWSEINFO bInfo;
 		ZeroMemory(&bInfo, sizeof(bInfo));
 		bInfo.hwndOwner = NULL;
-		bInfo.pidlRoot = NULL; 
+		bInfo.pidlRoot = NULL;
 		bInfo.pszDisplayName = szDir;
 		bInfo.lpszTitle = NULL;
 		bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
@@ -50,7 +50,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
 		if (lpItem) {
 		  SHGetPathFromIDList(lpItem, szDir);
-			return strdup(szDir);
+			return OSDIALOG_STRDUP(szDir);
 		}
 		else {
 			return NULL;
@@ -64,7 +64,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		char strFile[_MAX_PATH] = "";
 		if (filename)
 			snprintf(strFile, sizeof(strFile), "%s", filename);
-		char *strInitialDir = path ? strdup(path) : NULL;
+		char *strInitialDir = path ? OSDIALOG_STRDUP(path) : NULL;
 
 		ofn.lStructSize = sizeof(ofn);
 		ofn.lpstrFile = strFile;
@@ -98,8 +98,8 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 			success = GetSaveFileName(&ofn);
 
 		if (strInitialDir)
-			free(strInitialDir);
-		return success ? strdup(strFile) : NULL;
+			OSDIALOG_FREE(strInitialDir);
+		return success ? OSDIALOG_STRDUP(strFile) : NULL;
 	}
 }
 

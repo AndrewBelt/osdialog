@@ -121,7 +121,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 #endif
 	if ([panel runModal] == OK) {
 		NSURL *result_url = [panel URL];
-		result = strdup([[result_url path] UTF8String]);
+		result = OSDIALOG_STRDUP([[result_url path] UTF8String]);
 		// [result_url release];
 	}
 
