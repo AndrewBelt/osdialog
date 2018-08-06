@@ -96,11 +96,17 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 	if (action == OSDIALOG_SAVE && filename)
 		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), filename);
 
-	char *result = NULL;
+	char *chosen_filename = NULL;
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-		result = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		chosen_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 	}
 	gtk_widget_destroy(dialog);
+
+	char *result = NULL;
+	if (chosen_filename) {
+		result = OSDIALOG_STRDUP(chosen_filename);
+		g_free(chosen_filename);
+	}
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
