@@ -58,6 +58,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		}
 	}
 	else {
+		char fBuf[4096];
 		// open or save file dialog
 		OPENFILENAME ofn;
 		ZeroMemory(&ofn, sizeof(ofn));
@@ -74,7 +75,6 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 		if (filters) {
-			char fBuf[4096];
 			int fLen = 0;
 
 			for (; filters; filters = filters->next) {
