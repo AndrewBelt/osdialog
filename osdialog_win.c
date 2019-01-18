@@ -32,6 +32,14 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	}
 }
 
+int CALLBACK osdialog_browseCallbackProc( HWND hWnd, UINT uMsg, LPARAM lParam,
+  LPARAM lpData )
+{
+  if (uMsg == BFFM_INITIALIZED)
+    SendMessage(hWnd, BFFM_SETSELECTION,TRUE, lpData);
+  return 0;
+}
+
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
@@ -43,7 +51,9 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		bInfo.pidlRoot = NULL;
 		bInfo.pszDisplayName = szDir;
 		bInfo.lpszTitle = NULL;
-		bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
+		bInfo.ulFlags = BIF_RETURNONLYFSDIRS;
+		bInfo.lpfn = osdialog_browseCallbackProc;
+		bInfo.lParam = (LPARAM)path;
 		bInfo.lpfn = NULL;
 		bInfo.lParam = 0;
 		bInfo.iImage = -1;
