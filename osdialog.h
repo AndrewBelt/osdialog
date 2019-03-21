@@ -61,8 +61,8 @@ typedef struct osdialog_filters {
 /** Launches a file dialog and returns the selected path or NULL if nothing was selected
 If the return result is not NULL, caller must free() it
 
-`path` is the default folder the file dialog will attempt to open in.
-`filename` is the default text that will appear in the filename input. Relevant to save dialog only.
+`path` is the default folder the file dialog will attempt to open in, or NULL for the OS's default.
+`filename` is the default text that will appear in the filename input, or NULL for the OS's default. Relevant to save dialog only.
 `filters` is a list of patterns to filter the file selection, or NULL
 */
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters);

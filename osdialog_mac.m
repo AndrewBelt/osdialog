@@ -4,6 +4,11 @@
 
 
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message) {
+	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
+
+	// I have no idea how Objective-C memory management works. Someone please review this!
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
 	NSAlert *alert = [[NSAlert alloc] init];
 
 	switch (level) {
@@ -35,26 +40,29 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	}
 
 	NSString *messageString = [NSString stringWithUTF8String:message];
-	// [alert setInformativeText:messageString];
 	[alert setMessageText:messageString];
+	// Non-bold text
+	// [alert setInformativeText:messageString];
 
 	NSInteger button = [alert runModal];
 	
-	[alert release];
+	[pool release];
+	[keyWindow makeKeyAndOrderFront:nil];
 	return (button == NSAlertFirstButtonReturn);
 }
 
 
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
-	NSSavePanel *panel;
-	NSOpenPanel *open_panel;
+	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
 
-	// No idea how to manage memory with Objective C. Please help!
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
+	NSSavePanel *panel;
+	// NSOpenPanel is a subclass of NSSavePanel. Not defined for OSDIALOG_SAVE.
+	NSOpenPanel *open_panel;
+
 	if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
-		open_panel = [NSOpenPanel openPanel];
-		panel = open_panel;
+		panel = open_panel = [NSOpenPanel openPanel];
 	}
 	else {
 		panel = [NSSavePanel savePanel];
@@ -76,51 +84,47 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		}
 
 		[panel setAllowedFileTypes:fileTypes];
-		// [fileTypes release];
 	}
 
 	if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
-		open_panel.allowsMultipleSelection = NO;
+		[open_panel setAllowsMultipleSelection:NO];
 	}
 	if (action == OSDIALOG_OPEN) {
-		open_panel.canChooseDirectories = NO;
-		open_panel.canChooseFiles = YES;
+		[open_panel setCanChooseDirectories:NO];
+		[open_panel setCanChooseFiles:YES];
 	}
 	if (action == OSDIALOG_OPEN_DIR) {
-		open_panel.canCreateDirectories = YES;
-		open_panel.canChooseDirectories = YES;
-		open_panel.canChooseFiles = NO;
+		[open_panel setCanCreateDirectories:YES];
+		[open_panel setCanChooseDirectories:YES];
+		[open_panel setCanChooseFiles:NO];
 	}
 
 	if (path) {
 		NSString *path_str = [NSString stringWithUTF8String:path];
 		NSURL *path_url = [NSURL fileURLWithPath:path_str];
-		panel.directoryURL = path_url;
-		// [path_url release];
-		// [path_str release];
+		[panel setDirectoryURL:path_url];
 	}
 
 	if (filename) {
 		NSString *filenameString = [NSString stringWithUTF8String:filename];
-		panel.nameFieldStringValue = filenameString;
-		// [filenameString release];
+		[panel setNameFieldStringValue:filenameString];
 	}
 
 	char *result = NULL;
 
+	NSModalResponse response = [panel runModal];
 #ifdef __MAC_10_9
 	#define OK NSModalResponseOK
 #else
 	#define OK NSOKButton
 #endif
-	if ([panel runModal] == OK) {
+	if (response == OK) {
 		NSURL *result_url = [panel URL];
 		result = OSDIALOG_STRDUP([[result_url path] UTF8String]);
-		// [result_url release];
 	}
 
-	// [panel release];
 	[pool release];
+	[keyWindow makeKeyAndOrderFront:nil];
 	return result;
 }
 
