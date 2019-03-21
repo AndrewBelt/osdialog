@@ -32,6 +32,14 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	}
 }
 
+
+char *osdialog_prompt(osdialog_message_level level, const char *message, const char *text) {
+	// TODO
+	assert(0);
+	return NULL;
+}
+
+
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog

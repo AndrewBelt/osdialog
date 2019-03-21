@@ -52,6 +52,55 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 }
 
 
+char *osdialog_prompt(osdialog_message_level level, const char *message, const char *text) {
+	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
+
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+	NSAlert *alert = [[NSAlert alloc] init];
+
+	switch (level) {
+		default:
+#ifdef __MAC_10_12
+		case OSDIALOG_INFO: [alert setAlertStyle:NSAlertStyleInformational]; break;
+		case OSDIALOG_WARNING: [alert setAlertStyle:NSAlertStyleWarning]; break;
+		case OSDIALOG_ERROR: [alert setAlertStyle:NSAlertStyleCritical]; break;
+#else
+		case OSDIALOG_INFO: [alert setAlertStyle:NSInformationalAlertStyle]; break;
+		case OSDIALOG_WARNING: [alert setAlertStyle:NSWarningAlertStyle]; break;
+		case OSDIALOG_ERROR: [alert setAlertStyle:NSCriticalAlertStyle]; break;
+#endif
+	}
+
+	[alert addButtonWithTitle:@"OK"];
+	[alert addButtonWithTitle:@"Cancel"];
+
+	NSString *messageString = [NSString stringWithUTF8String:message];
+	[alert setMessageText:messageString];
+
+	NSTextField *input = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 24)];
+	[alert setAccessoryView:input];
+
+	if (text) {
+		NSString *path_str = [NSString stringWithUTF8String:text];
+		[input setStringValue:path_str];
+	}
+
+	NSInteger button = [alert runModal];
+
+	char *result = NULL;
+	if (button == NSAlertFirstButtonReturn) {
+		[input validateEditing];
+		NSString *result_str = [input stringValue];
+		result = OSDIALOG_STRDUP([result_str UTF8String]);
+	}
+	
+	[pool release];
+	[keyWindow makeKeyAndOrderFront:nil];
+	return result;
+}
+
+
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
 	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
 

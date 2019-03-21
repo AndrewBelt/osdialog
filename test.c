@@ -7,19 +7,57 @@ int main() {
 	// Message
 	if (0) {
 		int res;
+
 		printf("message info\n");
 		res = osdialog_message(OSDIALOG_INFO, OSDIALOG_OK, "Info");
 		printf("\t%d\n", res);
+
 		printf("message warning\n");
 		res = osdialog_message(OSDIALOG_WARNING, OSDIALOG_OK_CANCEL, "Warning");
 		printf("\t%d\n", res);
+
 		printf("message error\n");
 		res = osdialog_message(OSDIALOG_ERROR, OSDIALOG_YES_NO, "Error");
 		printf("\t%d\n", res);
 	}
 
-	// Open file with default arguments
+	// Prompt
 	if (1) {
+		char *text;
+
+		printf("prompt info\n");
+		text = osdialog_prompt(OSDIALOG_INFO, "Info", "default text");
+		if (text) {
+			printf("\t%s\n", text);
+			free(text);
+		}
+		else {
+			printf("\tCanceled\n");
+		}
+
+		printf("prompt warning\n");
+		text = osdialog_prompt(OSDIALOG_WARNING, "Warning", "default text");
+		if (text) {
+			printf("\t%s\n", text);
+			free(text);
+		}
+		else {
+			printf("\tCanceled\n");
+		}
+
+		printf("prompt error\n");
+		text = osdialog_prompt(OSDIALOG_ERROR, "Error", "default text");
+		if (text) {
+			printf("\t%s\n", text);
+			free(text);
+		}
+		else {
+			printf("\tCanceled\n");
+		}
+	}
+
+	// Open file with default arguments
+	if (0) {
 		printf("file open\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
 		if (filename) {
@@ -32,7 +70,7 @@ int main() {
 	}
 
 	// Open directory with default arguments
-	if (1) {
+	if (0) {
 		printf("file open dir\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, NULL, NULL, NULL);
 		if (filename) {
@@ -45,7 +83,7 @@ int main() {
 	}
 
 	// Save file with default arguments
-	if (1) {
+	if (0) {
 		printf("file save\n");
 		char *filename = osdialog_file(OSDIALOG_SAVE, NULL, NULL, NULL);
 		if (filename) {
