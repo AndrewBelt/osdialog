@@ -3,7 +3,7 @@ CFLAGS = -std=c99 -Wall -g
 SOURCES = test.c
 
 ifndef ARCH
-$(error ARCH is not defined. Run with `make ARCH=mac`, win, or gtk2)
+$(error ARCH is not defined. Run with `make ARCH=cocoa`, win32, or gtk2)
 endif
 
 SOURCES += osdialog.c
@@ -14,16 +14,14 @@ ifeq ($(ARCH),gtk2)
 	SOURCES += osdialog_gtk2.c
 endif
 
-ifeq ($(ARCH),win)
-	# Windows
+ifeq ($(ARCH),win32)
 	LDFLAGS += -lcomdlg32
-	SOURCES += osdialog_win.c
+	SOURCES += osdialog_win32.c
 endif
 
-ifeq ($(ARCH),mac)
-	# MacOS
+ifeq ($(ARCH),cocoa)
 	LDFLAGS += -framework AppKit
-	SOURCES += osdialog_mac.m
+	SOURCES += osdialog_cocoa.m
 	CFLAGS += -mmacosx-version-min=10.7
 endif
 

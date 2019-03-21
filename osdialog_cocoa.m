@@ -38,16 +38,10 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	// [alert setInformativeText:messageString];
 	[alert setMessageText:messageString];
 
-	int result;
-	if ([alert runModal] == NSAlertFirstButtonReturn) {
-		result = 1;
-	}
-	else {
-		result = 0;
-	}
-
+	NSInteger button = [alert runModal];
+	
 	[alert release];
-	return result;
+	return (button == NSAlertFirstButtonReturn);
 }
 
 
