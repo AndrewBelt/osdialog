@@ -24,11 +24,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 		case OSDIALOG_YES_NO: buttonsType = GTK_BUTTONS_YES_NO; break;
 	}
 
-	GtkWidget *dialog = gtk_message_dialog_new (NULL,
-		0,
-		messageType,
-		buttonsType,
-		"%s", message);
+	GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, buttonsType, "%s", message);
 
 	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -36,18 +32,15 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	while (gtk_events_pending())
 		gtk_main_iteration();
 
-	switch (result) {
-		case GTK_RESPONSE_OK:
-		case GTK_RESPONSE_YES:
-			return 1;
-		default:
-			return 0;
-	}
+	return (result == GTK_RESPONSE_OK || result == GTK_RESPONSE_YES);
 }
 
 
 char *osdialog_prompt(osdialog_message_level level, const char *message, const char *text) {
 	// TODO
+	(void) level;
+	(void) message;
+	(void) text;
 	assert(0);
 	return NULL;
 }
@@ -111,7 +104,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 
 	char *result = NULL;
 	if (chosen_filename) {
-		result = OSDIALOG_STRDUP(chosen_filename);
+		result = osdialog_strndup(chosen_filename, strlen(chosen_filename));
 		g_free(chosen_filename);
 	}
 

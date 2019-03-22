@@ -22,7 +22,7 @@ int main() {
 	}
 
 	// Prompt
-	if (1) {
+	if (0) {
 		char *text;
 
 		printf("prompt info\n");

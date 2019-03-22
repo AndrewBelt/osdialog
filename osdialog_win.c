@@ -35,12 +35,17 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 char *osdialog_prompt(osdialog_message_level level, const char *message, const char *text) {
 	// TODO
+	(void) level;
+	(void) message;
+	(void) text;
 	assert(0);
 	return NULL;
 }
 
 
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
+	char *result = NULL;
+
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
 		TCHAR szDir[MAX_PATH] = "";
@@ -59,10 +64,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
 		if (lpItem) {
 		  SHGetPathFromIDList(lpItem, szDir);
-			return OSDIALOG_STRDUP(szDir);
-		}
-		else {
-			return NULL;
+		  result = osdialog_strndup(szDir, strlen(szDir));
 		}
 	}
 	else {
@@ -74,7 +76,10 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		char strFile[_MAX_PATH] = "";
 		if (filename)
 			snprintf(strFile, sizeof(strFile), "%s", filename);
-		char *strInitialDir = path ? OSDIALOG_STRDUP(path) : NULL;
+		char *strInitialDir = NULL;
+		if (path) {
+			strInitialDir = osdialog_strndup(path, strlen(path));
+		}
 
 		ofn.lStructSize = sizeof(ofn);
 		ofn.lpstrFile = strFile;
@@ -108,8 +113,13 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 
 		if (strInitialDir)
 			OSDIALOG_FREE(strInitialDir);
-		return success ? OSDIALOG_STRDUP(strFile) : NULL;
+
+		if (success) {
+			result = osdialog_strndup(strFile, strlen(strFile));
+		}
 	}
+
+	return result;
 }
 
 

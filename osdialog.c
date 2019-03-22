@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-static char *strndup_better(const char *s, int n) {
+char *osdialog_strndup(const char *s, size_t n) {
 	char *d = OSDIALOG_MALLOC(n + 1);
 	memcpy(d, s, n);
 	d[n] = '\0';
@@ -22,7 +22,7 @@ osdialog_filters *osdialog_filters_parse(const char *str) {
 	while (1) {
 		switch (*str) {
 			case ':': {
-				filters->name = strndup_better(text, str - text);
+				filters->name = osdialog_strndup(text, str - text);
 				filters->patterns = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
 				patterns = filters->patterns;
 				patterns->next = NULL;
@@ -30,7 +30,7 @@ osdialog_filters *osdialog_filters_parse(const char *str) {
 			} break;
 			case ',': {
 				assert(patterns);
-				patterns->pattern = strndup_better(text, str - text);
+				patterns->pattern = osdialog_strndup(text, str - text);
 				patterns->next = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
 				patterns = patterns->next;
 				patterns->next = NULL;
@@ -38,7 +38,7 @@ osdialog_filters *osdialog_filters_parse(const char *str) {
 			} break;
 			case ';': {
 				assert(patterns);
-				patterns->pattern = strndup_better(text, str - text);
+				patterns->pattern = osdialog_strndup(text, str - text);
 				filters->next = OSDIALOG_MALLOC(sizeof(osdialog_filters));
 				filters = filters->next;
 				filters->next = NULL;
@@ -47,7 +47,7 @@ osdialog_filters *osdialog_filters_parse(const char *str) {
 			} break;
 			case '\0': {
 				assert(patterns);
-				patterns->pattern = strndup_better(text, str - text);
+				patterns->pattern = osdialog_strndup(text, str - text);
 			} break;
 			default: break;
 		}

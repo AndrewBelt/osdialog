@@ -1,5 +1,5 @@
 
-CFLAGS = -std=c99 -Wall -g
+CFLAGS = -g -Wall -Wextra -std=c99 -pedantic
 SOURCES = test.c
 
 ifndef ARCH
@@ -29,7 +29,7 @@ test: $(SOURCES)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 run: test
-	./test
+	./$^
 
 clean:
 	rm -rfv test

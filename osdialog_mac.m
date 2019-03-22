@@ -45,7 +45,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	// [alert setInformativeText:messageString];
 
 	NSInteger button = [alert runModal];
-	
+
 	[pool release];
 	[keyWindow makeKeyAndOrderFront:nil];
 	return (button == NSAlertFirstButtonReturn);
@@ -92,9 +92,9 @@ char *osdialog_prompt(osdialog_message_level level, const char *message, const c
 	if (button == NSAlertFirstButtonReturn) {
 		[input validateEditing];
 		NSString *result_str = [input stringValue];
-		result = OSDIALOG_STRDUP([result_str UTF8String]);
+		result = osdialog_strndup([result_str UTF8String], [result_str length]);
 	}
-	
+
 	[pool release];
 	[keyWindow makeKeyAndOrderFront:nil];
 	return result;
@@ -124,7 +124,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 
 	if (filters) {
 		NSMutableArray *fileTypes = [[NSMutableArray alloc] init];
-		
+
 		for (; filters; filters = filters->next) {
 			for (osdialog_filter_patterns *patterns = filters->patterns; patterns; patterns = patterns->next) {
 				NSString *fileType = [NSString stringWithUTF8String:patterns->pattern];
@@ -169,7 +169,8 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 #endif
 	if (response == OK) {
 		NSURL *result_url = [panel URL];
-		result = OSDIALOG_STRDUP([[result_url path] UTF8String]);
+		NSString *result_str = [result_url UTF8String];
+		result = osdialog_strndup([result_str UTF8String], [result_str length]);
 	}
 
 	[pool release];
