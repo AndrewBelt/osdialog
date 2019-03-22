@@ -1,6 +1,7 @@
 #include "osdialog.h"
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 #include <windows.h>
 #include <commdlg.h>
 #include <shlobj.h>
@@ -124,6 +125,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 
 
 int osdialog_color_picker(osdialog_color *color, int opacity) {
+	(void) opacity;
 	if (!color)
 		return 0;
 

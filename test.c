@@ -5,149 +5,149 @@
 
 int main() {
 	// Message
-	if (0) {
+	if (1) {
 		int res;
 
-		printf("message info\n");
+		fprintf(stderr, "message info\n");
 		res = osdialog_message(OSDIALOG_INFO, OSDIALOG_OK, "Info");
-		printf("\t%d\n", res);
+		fprintf(stderr, "\t%d\n", res);
 
-		printf("message warning\n");
+		fprintf(stderr, "message warning\n");
 		res = osdialog_message(OSDIALOG_WARNING, OSDIALOG_OK_CANCEL, "Warning");
-		printf("\t%d\n", res);
+		fprintf(stderr, "\t%d\n", res);
 
-		printf("message error\n");
+		fprintf(stderr, "message error\n");
 		res = osdialog_message(OSDIALOG_ERROR, OSDIALOG_YES_NO, "Error");
-		printf("\t%d\n", res);
+		fprintf(stderr, "\t%d\n", res);
 	}
 
 	// Prompt
 	if (0) {
 		char *text;
 
-		printf("prompt info\n");
+		fprintf(stderr, "prompt info\n");
 		text = osdialog_prompt(OSDIALOG_INFO, "Info", "default text");
 		if (text) {
-			printf("\t%s\n", text);
+			fprintf(stderr, "\t%s\n", text);
 			free(text);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 
-		printf("prompt warning\n");
+		fprintf(stderr, "prompt warning\n");
 		text = osdialog_prompt(OSDIALOG_WARNING, "Warning", "default text");
 		if (text) {
-			printf("\t%s\n", text);
+			fprintf(stderr, "\t%s\n", text);
 			free(text);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 
-		printf("prompt error\n");
+		fprintf(stderr, "prompt error\n");
 		text = osdialog_prompt(OSDIALOG_ERROR, "Error", "default text");
 		if (text) {
-			printf("\t%s\n", text);
+			fprintf(stderr, "\t%s\n", text);
 			free(text);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 	}
 
 	// Open file with default arguments
-	if (0) {
-		printf("file open\n");
+	if (1) {
+		fprintf(stderr, "file open\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
 		if (filename) {
-			printf("\t%s\n", filename);
+			fprintf(stderr, "\t%s\n", filename);
 			free(filename);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 	}
 
 	// Open directory with default arguments
-	if (0) {
-		printf("file open dir\n");
+	if (1) {
+		fprintf(stderr, "file open dir\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, NULL, NULL, NULL);
 		if (filename) {
-			printf("\t%s\n", filename);
+			fprintf(stderr, "\t%s\n", filename);
 			free(filename);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 	}
 
 	// Save file with default arguments
-	if (0) {
-		printf("file save\n");
+	if (1) {
+		fprintf(stderr, "file save\n");
 		char *filename = osdialog_file(OSDIALOG_SAVE, NULL, NULL, NULL);
 		if (filename) {
-			printf("\t%s\n", filename);
+			fprintf(stderr, "\t%s\n", filename);
 			free(filename);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 	}
 
 	// Open file with custom arguments
-	if (0) {
-		printf("file open in cwd\n");
+	if (1) {
+		fprintf(stderr, "file open in cwd\n");
 		osdialog_filters *filters = osdialog_filters_parse("Source:c,cpp,m;Header:h,hpp");
 		char *filename = osdialog_file(OSDIALOG_OPEN, ".", "test", filters);
 		if (filename) {
-			printf("\t%s\n", filename);
+			fprintf(stderr, "\t%s\n", filename);
 			free(filename);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 		osdialog_filters_free(filters);
 	}
 
 	// Open directory with custom arguments
-	if (0) {
-		printf("file open dir in cwd\n");
+	if (1) {
+		fprintf(stderr, "file open dir in cwd\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, ".", "test", NULL);
 		if (filename) {
-			printf("\t%s\n", filename);
+			fprintf(stderr, "\t%s\n", filename);
 			free(filename);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 	}
 
 	// Save file with custom arguments
-	if (0) {
-		printf("file save in cwd\n");
+	if (1) {
+		fprintf(stderr, "file save in cwd\n");
 		char *filename = osdialog_file(OSDIALOG_SAVE, ".", "test", NULL);
 		if (filename) {
-			printf("\t%s\n", filename);
+			fprintf(stderr, "\t%s\n", filename);
 			free(filename);
 		}
 		else {
-			printf("\tCanceled\n");
+			fprintf(stderr, "\tCanceled\n");
 		}
 	}
 
 	// Color selector
-	if (0) {
+	if (1) {
 		int res;
 		osdialog_color color = {255, 0, 255, 255};
-		printf("color picker\n");
+		fprintf(stderr, "color picker\n");
 		res = osdialog_color_picker(&color, 0);
-		printf("\t%d\n", res);
-		printf("\t#%02x%02x%02x%02x\n", color.r, color.g, color.b, color.a);
-		printf("color picker with opacity\n");
+		fprintf(stderr, "\t%d\n", res);
+		fprintf(stderr, "\t#%02x%02x%02x%02x\n", color.r, color.g, color.b, color.a);
+		fprintf(stderr, "color picker with opacity\n");
 		res = osdialog_color_picker(&color, 1);
-		printf("\t%d\n", res);
-		printf("\t#%02x%02x%02x%02x\n", color.r, color.g, color.b, color.a);
+		fprintf(stderr, "\t%d\n", res);
+		fprintf(stderr, "\t#%02x%02x%02x%02x\n", color.r, color.g, color.b, color.a);
 	}
 
 	return 0;
