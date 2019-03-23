@@ -169,7 +169,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 #endif
 	if (response == OK) {
 		NSURL *result_url = [panel URL];
-		NSString *result_str = [result_url UTF8String];
+		NSString *result_str = [result_url path];
 		result = osdialog_strndup([result_str UTF8String], [result_str length]);
 	}
 
