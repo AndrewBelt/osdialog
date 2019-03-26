@@ -8,7 +8,7 @@
 
 
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message) {
-	UINT type = 0;
+	UINT type = MB_APPLMODAL;
 	switch (level) {
 		default:
 		case OSDIALOG_INFO: type |= MB_ICONINFORMATION; break;
@@ -23,7 +23,8 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 		case OSDIALOG_YES_NO: type |= MB_YESNO; break;
 	}
 
-	int result = MessageBox(NULL, message, "", type);
+	HWND window = GetActiveWindow();
+	int result = MessageBox(window, message, "", type);
 	switch (result) {
 		case IDOK:
 		case IDYES:
@@ -53,13 +54,9 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 
 		BROWSEINFO bInfo;
 		ZeroMemory(&bInfo, sizeof(bInfo));
-		bInfo.hwndOwner = NULL;
-		bInfo.pidlRoot = NULL;
+		bInfo.hwndOwner = GetActiveWindow();
 		bInfo.pszDisplayName = szDir;
-		bInfo.lpszTitle = NULL;
 		bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
-		bInfo.lpfn = NULL;
-		bInfo.lParam = 0;
 		bInfo.iImage = -1;
 
 		LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
@@ -82,11 +79,12 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 			strInitialDir = osdialog_strndup(path, strlen(path));
 		}
 
+		ofn.hwndOwner = GetActiveWindow();
 		ofn.lStructSize = sizeof(ofn);
 		ofn.lpstrFile = strFile;
 		ofn.nMaxFile = sizeof(strFile);
 		ofn.lpstrInitialDir = strInitialDir;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+		ofn.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 		if (filters) {
 			int fLen = 0;
