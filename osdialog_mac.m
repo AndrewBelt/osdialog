@@ -4,10 +4,9 @@
 
 
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message) {
-	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
+	@autoreleasepool {
 
-	// I have no idea how Objective-C memory management works. Someone please review this!
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
 
 	NSAlert *alert = [[NSAlert alloc] init];
 
@@ -46,16 +45,17 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 	NSInteger button = [alert runModal];
 
-	[pool release];
 	[keyWindow makeKeyAndOrderFront:nil];
+
 	return (button == NSAlertFirstButtonReturn);
+	} // @autoreleasepool
 }
 
 
 char *osdialog_prompt(osdialog_message_level level, const char *message, const char *text) {
-	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
+	@autoreleasepool {
 
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
 
 	NSAlert *alert = [[NSAlert alloc] init];
 
@@ -95,16 +95,17 @@ char *osdialog_prompt(osdialog_message_level level, const char *message, const c
 		result = osdialog_strndup([result_str UTF8String], [result_str length]);
 	}
 
-	[pool release];
 	[keyWindow makeKeyAndOrderFront:nil];
+
 	return result;
+	} // @autoreleasepool
 }
 
 
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
-	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
+	@autoreleasepool {
 
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
 
 	NSSavePanel *panel;
 	// NSOpenPanel is a subclass of NSSavePanel. Not defined for OSDIALOG_SAVE.
@@ -173,14 +174,17 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		result = osdialog_strndup([result_str UTF8String], [result_str length]);
 	}
 
-	[pool release];
 	[keyWindow makeKeyAndOrderFront:nil];
+
 	return result;
+	} // @autoreleasepool
 }
 
 
 int osdialog_color_picker(osdialog_color *color, int opacity) {
 	assert(0);
+
+	@autoreleasepool {
 
 	// TODO I have no idea what I'm doing here
 	NSColorPanel *panel = [NSColorPanel sharedColorPanel];
@@ -195,4 +199,5 @@ int osdialog_color_picker(osdialog_color *color, int opacity) {
 	// [panel makeKeyAndOrderFront:self];
 
 	return 0;
+	} // @autoreleasepool
 }
