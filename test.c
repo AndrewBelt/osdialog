@@ -9,15 +9,15 @@ int main() {
 		int res;
 
 		fprintf(stderr, "message info\n");
-		res = osdialog_message(OSDIALOG_INFO, OSDIALOG_OK, "Info");
+		res = osdialog_message(OSDIALOG_INFO, OSDIALOG_OK, "Info こんにちは");
 		fprintf(stderr, "\t%d\n", res);
 
 		fprintf(stderr, "message warning\n");
-		res = osdialog_message(OSDIALOG_WARNING, OSDIALOG_OK_CANCEL, "Warning");
+		res = osdialog_message(OSDIALOG_WARNING, OSDIALOG_OK_CANCEL, "Warning こんにちは");
 		fprintf(stderr, "\t%d\n", res);
 
 		fprintf(stderr, "message error\n");
-		res = osdialog_message(OSDIALOG_ERROR, OSDIALOG_YES_NO, "Error");
+		res = osdialog_message(OSDIALOG_ERROR, OSDIALOG_YES_NO, "Error こんにちは");
 		fprintf(stderr, "\t%d\n", res);
 	}
 
@@ -57,7 +57,7 @@ int main() {
 	}
 
 	// Open file with default arguments
-	if (1) {
+	if (0) {
 		fprintf(stderr, "file open\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
 		if (filename) {
@@ -70,7 +70,7 @@ int main() {
 	}
 
 	// Open directory with default arguments
-	if (1) {
+	if (0) {
 		fprintf(stderr, "file open dir\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, NULL, NULL, NULL);
 		if (filename) {
@@ -83,7 +83,7 @@ int main() {
 	}
 
 	// Save file with default arguments
-	if (1) {
+	if (0) {
 		fprintf(stderr, "file save\n");
 		char *filename = osdialog_file(OSDIALOG_SAVE, NULL, NULL, NULL);
 		if (filename) {
@@ -96,7 +96,7 @@ int main() {
 	}
 
 	// Open file with custom arguments
-	if (1) {
+	if (0) {
 		fprintf(stderr, "file open in cwd\n");
 		osdialog_filters *filters = osdialog_filters_parse("Source:c,cpp,m;Header:h,hpp");
 		char *filename = osdialog_file(OSDIALOG_OPEN, ".", "test", filters);
@@ -111,7 +111,7 @@ int main() {
 	}
 
 	// Open directory with custom arguments
-	if (1) {
+	if (0) {
 		fprintf(stderr, "file open dir in cwd\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, ".", "test", NULL);
 		if (filename) {
@@ -124,7 +124,7 @@ int main() {
 	}
 
 	// Save file with custom arguments
-	if (1) {
+	if (0) {
 		fprintf(stderr, "file save in cwd\n");
 		char *filename = osdialog_file(OSDIALOG_SAVE, ".", "test", NULL);
 		if (filename) {
@@ -137,7 +137,7 @@ int main() {
 	}
 
 	// Color selector
-	if (1) {
+	if (0) {
 		int res;
 		osdialog_color color = {255, 0, 255, 255};
 		fprintf(stderr, "color picker\n");

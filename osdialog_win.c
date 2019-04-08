@@ -7,6 +7,25 @@
 #include <shlobj.h>
 
 
+static char *wchar_to_utf8(const wchar_t *s) {
+	if (!s) return NULL;
+	int len = WideCharToMultiByte(CP_UTF8, 0, s, -1, NULL, 0, NULL, NULL);
+	if (!len) return NULL;
+	char *r = OSDIALOG_MALLOC(len);
+	WideCharToMultiByte(CP_UTF8, 0, s, -1, r, len, NULL, NULL);
+	return r;
+}
+
+static wchar_t *utf8_to_wchar(const char *s) {
+	if (!s) return NULL;
+	int len = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
+	if (!len) return NULL;
+	wchar_t *r = OSDIALOG_MALLOC(len * sizeof(wchar_t));
+	MultiByteToWideChar(CP_UTF8, 0, s, -1, r, len);
+	return r;
+}
+
+
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message) {
 	UINT type = MB_APPLMODAL;
 	switch (level) {
@@ -24,7 +43,10 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	}
 
 	HWND window = GetActiveWindow();
-	int result = MessageBox(window, message, "", type);
+	wchar_t *messageW = utf8_to_wchar(message);
+	int result = MessageBoxW(window, messageW, L"", type);
+	OSDIALOG_FREE(messageW);
+
 	switch (result) {
 		case IDOK:
 		case IDYES:
