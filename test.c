@@ -5,7 +5,7 @@
 
 int main() {
 	// Message
-	if (1) {
+	if (0) {
 		int res;
 
 		fprintf(stderr, "message info\n");
@@ -56,19 +56,6 @@ int main() {
 		}
 	}
 
-	// Open file with default arguments
-	if (0) {
-		fprintf(stderr, "file open\n");
-		char *filename = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
-		if (filename) {
-			fprintf(stderr, "\t%s\n", filename);
-			free(filename);
-		}
-		else {
-			fprintf(stderr, "\tCanceled\n");
-		}
-	}
-
 	// Open directory with default arguments
 	if (0) {
 		fprintf(stderr, "file open dir\n");
@@ -82,8 +69,21 @@ int main() {
 		}
 	}
 
+	// Open file with default arguments
+	if (1) {
+		fprintf(stderr, "file open\n");
+		char *filename = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
+		if (filename) {
+			fprintf(stderr, "\t%s\n", filename);
+			free(filename);
+		}
+		else {
+			fprintf(stderr, "\tCanceled\n");
+		}
+	}
+
 	// Save file with default arguments
-	if (0) {
+	if (1) {
 		fprintf(stderr, "file save\n");
 		char *filename = osdialog_file(OSDIALOG_SAVE, NULL, NULL, NULL);
 		if (filename) {
@@ -95,11 +95,24 @@ int main() {
 		}
 	}
 
-	// Open file with custom arguments
+	// Open directory with custom arguments
 	if (0) {
+		fprintf(stderr, "file open dir in cwd\n");
+		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, ".", "こんにちは", NULL);
+		if (filename) {
+			fprintf(stderr, "\t%s\n", filename);
+			free(filename);
+		}
+		else {
+			fprintf(stderr, "\tCanceled\n");
+		}
+	}
+
+	// Open file with custom arguments
+	if (1) {
 		fprintf(stderr, "file open in cwd\n");
 		osdialog_filters *filters = osdialog_filters_parse("Source:c,cpp,m;Header:h,hpp");
-		char *filename = osdialog_file(OSDIALOG_OPEN, ".", "test", filters);
+		char *filename = osdialog_file(OSDIALOG_OPEN, ".", "こんにちは", filters);
 		if (filename) {
 			fprintf(stderr, "\t%s\n", filename);
 			free(filename);
@@ -110,23 +123,10 @@ int main() {
 		osdialog_filters_free(filters);
 	}
 
-	// Open directory with custom arguments
-	if (0) {
-		fprintf(stderr, "file open dir in cwd\n");
-		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, ".", "test", NULL);
-		if (filename) {
-			fprintf(stderr, "\t%s\n", filename);
-			free(filename);
-		}
-		else {
-			fprintf(stderr, "\tCanceled\n");
-		}
-	}
-
 	// Save file with custom arguments
-	if (0) {
+	if (1) {
 		fprintf(stderr, "file save in cwd\n");
-		char *filename = osdialog_file(OSDIALOG_SAVE, ".", "test", NULL);
+		char *filename = osdialog_file(OSDIALOG_SAVE, ".", "こんにちは", NULL);
 		if (filename) {
 			fprintf(stderr, "\t%s\n", filename);
 			free(filename);

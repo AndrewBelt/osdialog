@@ -67,48 +67,73 @@ char *osdialog_prompt(osdialog_message_level level, const char *message, const c
 }
 
 
+static INT CALLBACK browseCallbackProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+	if (Msg == BFFM_INITIALIZED) {
+		SendMessageW(hWnd, BFFM_SETSELECTION, 1, lParam);
+	}
+	return 0;
+}
+
 char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters) {
 	char *result = NULL;
 
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
-		TCHAR szDir[MAX_PATH] = "";
+		wchar_t szDir[MAX_PATH] = L"";
 
-		BROWSEINFO bInfo;
+		BROWSEINFOW bInfo;
 		ZeroMemory(&bInfo, sizeof(bInfo));
 		bInfo.hwndOwner = GetActiveWindow();
-		bInfo.pszDisplayName = szDir;
+		// bInfo.pszDisplayName = szDir;
 		bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
 		bInfo.iImage = -1;
 
-		LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
+		// TODO Default paths do not seem to work
+		wchar_t *pathW = NULL;
+		if (path) {
+			pathW = utf8_to_wchar(path);
+			bInfo.lpfn = browseCallbackProc;
+			bInfo.lParam = (LPARAM) pathW;
+		}
+
+		PIDLIST_ABSOLUTE lpItem = SHBrowseForFolderW(&bInfo);
 		if (lpItem) {
-		  SHGetPathFromIDList(lpItem, szDir);
-		  result = osdialog_strndup(szDir, strlen(szDir));
+		  SHGetPathFromIDListW(lpItem, szDir);
+		  result = wchar_to_utf8(szDir);
+		}
+		if (pathW) {
+			OSDIALOG_FREE(pathW);
 		}
 	}
 	else {
-		char fBuf[4096];
 		// open or save file dialog
-		OPENFILENAME ofn;
+		OPENFILENAMEW ofn;
 		ZeroMemory(&ofn, sizeof(ofn));
-
-		char strFile[_MAX_PATH] = "";
-		if (filename)
-			snprintf(strFile, sizeof(strFile), "%s", filename);
-		char *strInitialDir = NULL;
-		if (path) {
-			strInitialDir = osdialog_strndup(path, strlen(path));
-		}
-
 		ofn.hwndOwner = GetActiveWindow();
 		ofn.lStructSize = sizeof(ofn);
-		ofn.lpstrFile = strFile;
-		ofn.nMaxFile = sizeof(strFile);
-		ofn.lpstrInitialDir = strInitialDir;
 		ofn.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
+		// Filename
+		wchar_t strFile[MAX_PATH] = L"";
+		if (filename) {
+			wchar_t *filenameW = utf8_to_wchar(filename);
+			snwprintf(strFile, MAX_PATH, L"%s", filenameW);
+			OSDIALOG_FREE(filenameW);
+		}
+		ofn.lpstrFile = strFile;
+		ofn.nMaxFile = MAX_PATH;
+
+		// Path
+		wchar_t *strInitialDir = NULL;
+		if (path) {
+			strInitialDir = utf8_to_wchar(path);
+		}
+		ofn.lpstrInitialDir = strInitialDir;
+
+		// Filters
+		wchar_t *strFilter = NULL;
 		if (filters) {
+			char fBuf[4096];
 			int fLen = 0;
 
 			for (; filters; filters = filters->next) {
@@ -122,21 +147,28 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 				fLen++;
 			}
 
-			ofn.lpstrFilter = fBuf;
+			strFilter = utf8_to_wchar(fBuf);
+			ofn.lpstrFilter = strFilter;
 			ofn.nFilterIndex = 1;
 		}
 
 		BOOL success;
-		if (action == OSDIALOG_OPEN)
-			success = GetOpenFileName(&ofn);
-		else
-			success = GetSaveFileName(&ofn);
+		if (action == OSDIALOG_OPEN) {
+			success = GetOpenFileNameW(&ofn);
+		}
+		else {
+			success = GetSaveFileNameW(&ofn);
+		}
 
-		if (strInitialDir)
+		// Clean up
+		if (strInitialDir) {
 			OSDIALOG_FREE(strInitialDir);
-
+		}
+		if (strFilter) {
+			OSDIALOG_FREE(strFilter);
+		}
 		if (success) {
-			result = osdialog_strndup(strFile, strlen(strFile));
+			result = wchar_to_utf8(strFile);
 		}
 	}
 
