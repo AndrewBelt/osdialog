@@ -125,8 +125,9 @@ int main() {
 
 	// Save file with custom arguments
 	if (1) {
+		osdialog_filters *filters = osdialog_filters_parse("Source:c,cpp,m;Header:h,hpp");
 		fprintf(stderr, "file save in cwd\n");
-		char *filename = osdialog_file(OSDIALOG_SAVE, ".", "こんにちは", NULL);
+		char *filename = osdialog_file(OSDIALOG_SAVE, ".", "こんにちは", filters);
 		if (filename) {
 			fprintf(stderr, "\t%s\n", filename);
 			free(filename);
@@ -134,6 +135,7 @@ int main() {
 		else {
 			fprintf(stderr, "\tCanceled\n");
 		}
+		osdialog_filters_free(filters);
 	}
 
 	// Color selector

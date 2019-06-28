@@ -138,16 +138,19 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 
 			for (; filters; filters = filters->next) {
 				fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "%s", filters->name);
-				fLen++;
+				fBuf[fLen++] = '\0';
 				for (osdialog_filter_patterns *patterns = filters->patterns; patterns; patterns = patterns->next) {
 					fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "*.%s", patterns->pattern);
 					if (patterns->next)
 						fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, ";");
 				}
-				fLen++;
+				fBuf[fLen++] = '\0';
 			}
+			fBuf[fLen++] = '\0';
 
-			strFilter = utf8_to_wchar(fBuf);
+			// Don't use utf8_to_wchar() because this is not a NULL-terminated string.
+			strFilter = OSDIALOG_MALLOC(fLen * sizeof(wchar_t));
+			MultiByteToWideChar(CP_UTF8, 0, fBuf, fLen, strFilter, fLen);
 			ofn.lpstrFilter = strFilter;
 			ofn.nFilterIndex = 1;
 		}
