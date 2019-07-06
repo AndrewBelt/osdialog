@@ -124,6 +124,13 @@ int osdialog_color_picker(osdialog_color *color, int opacity) {
 	GtkWidget *dialog = gtk_color_chooser_dialog_new ("Color",NULL);
 	GtkColorChooser *color_chooser = GTK_COLOR_CHOOSER(dialog);
 
+	GdkRGBA rgba;
+	rgba.red = color->r / 255.0;
+	rgba.green = color->g / 255.0;
+	rgba.blue = color->b / 255.0;
+	rgba.alpha = color->a / 255.0;
+   
+	gtk_color_chooser_set_rgba (color_chooser, &rgba);
 	gtk_color_chooser_set_use_alpha(color_chooser, opacity);
 
 	int result = 0;
