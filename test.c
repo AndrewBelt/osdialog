@@ -5,7 +5,7 @@
 
 int main() {
 	// Message
-	if (0) {
+	if (1) {
 		int res;
 
 		fprintf(stderr, "message info\n");
@@ -57,7 +57,7 @@ int main() {
 	}
 
 	// Open directory with default arguments
-	if (0) {
+	if (1) {
 		fprintf(stderr, "file open dir\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, NULL, NULL, NULL);
 		if (filename) {
@@ -96,7 +96,7 @@ int main() {
 	}
 
 	// Open directory with custom arguments
-	if (0) {
+	if (1) {
 		fprintf(stderr, "file open dir in cwd\n");
 		char *filename = osdialog_file(OSDIALOG_OPEN_DIR, ".", "こんにちは", NULL);
 		if (filename) {
@@ -139,7 +139,7 @@ int main() {
 	}
 
 	// Color selector
-	if (0) {
+	if (1) {
 		int res;
 		osdialog_color color = {255, 0, 255, 255};
 		fprintf(stderr, "color picker\n");

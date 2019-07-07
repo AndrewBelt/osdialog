@@ -3,7 +3,7 @@ CFLAGS = -g -Wall -Wextra -std=c99 -pedantic
 SOURCES = test.c
 
 ifndef ARCH
-$(error ARCH is not defined. Run with `make ARCH=mac`, win, or gtk2)
+$(error ARCH is not defined. Run with `make ARCH=mac`, win, gtk2, or gtk3)
 endif
 
 SOURCES += osdialog.c
