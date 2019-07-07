@@ -119,21 +119,37 @@ int osdialog_color_picker(osdialog_color *color, int opacity) {
 		return 0;
 	assert(gtk_init_check(NULL, NULL));
 
-	GtkWidget *dialog = gtk_color_selection_dialog_new("Color");
-	GtkColorSelection *colorsel = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(dialog)));
-
-	gtk_color_selection_set_has_opacity_control(colorsel, opacity);
+	#ifdef OSDIALOG_GTK3
+		GtkWidget *dialog = gtk_color_chooser_dialog_new ("Color",NULL);
+		GtkColorChooser *colorsel = GTK_COLOR_CHOOSER(dialog);
+		gtk_color_chooser_set_use_alpha(colorsel, opacity);
+	#else
+		GtkWidget *dialog = gtk_color_selection_dialog_new("Color");
+		GtkColorSelection *colorsel = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(dialog)));
+		gtk_color_selection_set_has_opacity_control(colorsel, opacity);
+	#endif
 
 	int result = 0;
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-		GdkColor c;
-		gtk_color_selection_get_current_color(colorsel, &c);
-		color->r = c.red >> 8;
-		color->g = c.green >> 8;
-		color->b = c.blue >> 8;
-		color->a = gtk_color_selection_get_current_alpha(colorsel) >> 8;
+		#ifdef OSDIALOG_GTK3
+			GdkRGBA c;
+			gtk_color_chooser_get_rgba(colorsel, &c);
+			color->r = c.red * 65535 + 0.5;
+			color->g = c.green * 65535 + 0.5;
+			color->b = c.blue * 65535 + 0.5;
+			color->a = c.alpha * 65535 + 0.5;
+		#else
+			GdkColor c;
+			gtk_color_selection_get_current_color(colorsel, &c);
+			color->r = c.red >> 8;
+			color->g = c.green >> 8;
+			color->b = c.blue >> 8;
+			color->a = gtk_color_selection_get_current_alpha(colorsel) >> 8;
+		#endif
+
 		result = 1;
 	}
+
 	gtk_widget_destroy(dialog);
 
 	while (gtk_events_pending())
