@@ -72,7 +72,7 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		title,
 		NULL,
 		gtkAction,
-		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+		"_Cancle", GTK_RESPONSE_CANCEL,
 		acceptText, GTK_RESPONSE_ACCEPT,
 		NULL);
 
