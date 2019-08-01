@@ -37,38 +37,38 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 
 char *osdialog_prompt(osdialog_message_level level, const char *message, const char *text) {
-  assert(gtk_init_check(NULL, NULL));
+	assert(gtk_init_check(NULL, NULL));
 
-  GtkMessageType messageType;
-  switch (level) {
-    default:
-    case OSDIALOG_INFO: messageType = GTK_MESSAGE_INFO; break;
-    case OSDIALOG_WARNING: messageType = GTK_MESSAGE_WARNING; break;
-    case OSDIALOG_ERROR: messageType = GTK_MESSAGE_ERROR; break;
-  }
+	GtkMessageType messageType;
+	switch (level) {
+		default:
+		case OSDIALOG_INFO: messageType = GTK_MESSAGE_INFO; break;
+		case OSDIALOG_WARNING: messageType = GTK_MESSAGE_WARNING; break;
+		case OSDIALOG_ERROR: messageType = GTK_MESSAGE_ERROR; break;
+	}
 
-  GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, GTK_BUTTONS_OK_CANCEL, "%s", message);
+	GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, GTK_BUTTONS_OK_CANCEL, "%s", message);
 
-  GtkWidget *entry = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(entry), text);
+	GtkWidget *entry = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entry), text);
 
-  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  gtk_container_add(GTK_CONTAINER(content_area), entry);
-  gtk_widget_show_all(dialog);
+	GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	gtk_container_add(GTK_CONTAINER(content_area), entry);
+	gtk_widget_show_all(dialog);
 
-  gint button = gtk_dialog_run(GTK_DIALOG(dialog));
-  char *result_str = g_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+	gint button = gtk_dialog_run(GTK_DIALOG(dialog));
+	const char *result_str = gtk_entry_get_text(GTK_ENTRY(entry));
+
+	char *result = NULL;
+	if (button == GTK_RESPONSE_OK) {
+		result = osdialog_strndup(result_str, strlen(result_str));
+	}
 	gtk_widget_destroy(dialog);
 
-  while (gtk_events_pending())
-    gtk_main_iteration();
+	while (gtk_events_pending())
+		gtk_main_iteration();
 
-  char *result = NULL;
-  if (button == GTK_RESPONSE_OK) {
-    result = osdialog_strndup(result_str, strlen(result_str));
-  }
-
-  return result;
+	return result;
 }
 
 
