@@ -1,3 +1,4 @@
+# This Makefile is only for building test.c. You do not need it in your own project.
 
 CFLAGS = -g -Wall -Wextra -std=c99 -pedantic
 SOURCES = test.c
