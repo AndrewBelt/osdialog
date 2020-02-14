@@ -18,6 +18,7 @@ extern "C" {
 #endif
 
 
+char* osdialog_strdup(const char* s);
 char* osdialog_strndup(const char* s, size_t n);
 
 

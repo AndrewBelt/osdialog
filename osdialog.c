@@ -4,6 +4,10 @@
 #include "osdialog.h"
 
 
+char* osdialog_strdup(const char* s) {
+	return osdialog_strndup(s, strlen(s));
+}
+
 char* osdialog_strndup(const char* s, size_t n) {
 	char* d = OSDIALOG_MALLOC(n + 1);
 	memcpy(d, s, n);

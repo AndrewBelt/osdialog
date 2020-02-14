@@ -1,10 +1,11 @@
-# This Makefile is only for building test.c. You do not need it in your own project.
+# The Makefile is only for building the osdialog test binary.
+# You don't need to use it for your application, but it might be helpful for suggesting compiler flags.
 
 CFLAGS = -g -Wall -Wextra -std=c99 -pedantic
 SOURCES = test.c
 
 ifndef ARCH
-$(error ARCH is not defined. Run with `make ARCH=mac`, win, gtk2, or gtk3)
+$(error ARCH is not defined. Run with `make ARCH=mac`, win, gtk2, gtk3, or zenity)
 endif
 
 SOURCES += osdialog.c
@@ -30,6 +31,10 @@ ifeq ($(ARCH),mac)
 	LDFLAGS += -framework AppKit
 	SOURCES += osdialog_mac.m
 	CFLAGS += -mmacosx-version-min=10.7
+endif
+
+ifeq ($(ARCH),zenity)
+	SOURCES += osdialog_zenity.c
 endif
 
 test: $(SOURCES)
