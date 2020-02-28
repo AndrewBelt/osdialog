@@ -1,15 +1,16 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <unistd.h>
-#include <sys/wait.h>
+#include <sys/wait.h> // for waitpid
 #include "osdialog.h"
 
 
 static const char zenityBin[] = "/usr/bin/zenity";
 
 
-static void clear_string_list(char** list) {
+static void string_list_clear(char** list) {
 	while (*list) {
 		OSDIALOG_FREE(*list);
 		*list = NULL;
@@ -18,27 +19,70 @@ static void clear_string_list(char** list) {
 }
 
 
-static int exec_string_list(const char* path, char** args) {
+static int string_list_exec(const char* path, const char* const* args, char* outBuf, size_t outLen, char* errBuf, size_t errLen) {
+	int outStream[2];
+	if (outBuf)
+		if (pipe(outStream) == -1)
+			return -1;
+
+	int errStream[2];
+	if (errBuf)
+		if (pipe(errStream) == -1)
+			return -1;
+
 	// The classic fork-and-exec routine
-	pid_t cid = fork();
-	if (cid < 0) {
+	pid_t pid = fork();
+	if (pid < 0) {
 		return -1;
 	}
-	else if (cid == 0) {
+	else if (pid == 0) {
 		// child process
-		int err = execv(path, args);
+		// Route stdout to outStream
+		if (outBuf) {
+			while ((dup2(outStream[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+			close(outStream[0]);
+			close(outStream[1]);
+		}
+		// Route stdout to outStream
+		if (errBuf) {
+			while ((dup2(errStream[1], STDERR_FILENO) == -1) && (errno == EINTR)) {}
+			close(errStream[0]);
+			close(errStream[1]);
+		}
+		// POSIX guarantees that execv does not modify the args array, so it's safe to remove const with a cast.
+		int err = execv(path, (char* const*) args);
 		if (err)
 			exit(0);
+		// Will never reach
+		exit(0);
 	}
-	else if (cid > 0) {
-		// parent process
-		int status = -1;
-		int options = 0;
-		waitpid(cid, &status, options);
-		return status;
+
+	// parent process
+	// Close the pipe inputs because the parent doesn't need them
+	if (outBuf)
+		close(outStream[1]);
+	if (errBuf)
+		close(errStream[1]);
+	// Wait for child process to close
+	int status = -1;
+	int options = 0;
+	waitpid(pid, &status, options);
+	// Read streams
+	if (outBuf) {
+		ssize_t count = read(outStream[0], outBuf, outLen - 1);
+		if (count < 0)
+			count = 0;
+		outBuf[count] = '\0';
+		close(outStream[0]);
 	}
-	// Will never reach
-	return -1;
+	if (errBuf) {
+		ssize_t count = read(errStream[0], errBuf, errLen - 1);
+		if (count < 0)
+			count = 0;
+		errBuf[count] = '\0';
+		close(errStream[0]);
+	}
+	return status;
 }
 
 
@@ -79,8 +123,8 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	args[argIndex++] = osdialog_strdup(message);
 
 	args[argIndex++] = NULL;
-	int ret = exec_string_list(zenityBin, args);
-	clear_string_list(args);
+	int ret = string_list_exec(zenityBin, (const char* const*) args, NULL, 0, NULL, 0);
+	string_list_clear(args);
 	return ret == 0;
 }
 
@@ -95,8 +139,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 	// Unfortunately the level is ignored
 
 	args[argIndex++] = NULL;
-	int ret = exec_string_list(zenityBin, args);
-	clear_string_list(args);
+	int ret = string_list_exec(zenityBin, (const char* const*) args, NULL, 0, NULL, 0);
+	string_list_clear(args);
 	// TODO
 	return NULL;
 }
@@ -124,13 +168,27 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		args[argIndex++] = osdialog_strdup("--filename");
 		args[argIndex++] = osdialog_strdup(path);
 	}
-	// TODO file filters
+
+	if (filters) {
+		args[argIndex++] = osdialog_strdup("--file-filter");
+		// Only support the first filter and first pattern of that filter, out of laziness.
+		char buf[1024];
+		snprintf(buf, sizeof(buf), "%s|*.%s", filters->name, filters->patterns->pattern);
+		args[argIndex++] = osdialog_strdup(buf);
+	}
 
 	args[argIndex++] = NULL;
-	int ret = exec_string_list(zenityBin, args);
-	clear_string_list(args);
-	// TODO
-	return NULL;
+	char outBuf[4096 + 1];
+	int ret = string_list_exec(zenityBin, (const char* const*) args, outBuf, sizeof(outBuf), NULL, 0);
+	string_list_clear(args);
+	if (ret != 0)
+		return NULL;
+
+	// Remove trailing newline
+	size_t outLen = strlen(outBuf);
+	if (outLen > 0)
+		outBuf[outLen - 1] = '\0';
+	return osdialog_strdup(outBuf);
 }
 
 
@@ -145,8 +203,8 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	args[argIndex++] = osdialog_strdup("--color-selection");
 
 	args[argIndex++] = NULL;
-	int ret = exec_string_list(zenityBin, args);
-	clear_string_list(args);
+	int ret = string_list_exec(zenityBin, (const char* const*) args, NULL, 0, NULL, 0);
+	string_list_clear(args);
 	// TODO
 	return 0;
 }
