@@ -73,51 +73,47 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 static INT CALLBACK browseCallbackProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	if (Msg == BFFM_INITIALIZED) {
-		SendMessageW(hWnd, BFFM_SETSELECTION, 1, lParam);
+		SendMessageW(hWnd, BFFM_SETEXPANDED, 1, lParam);
 	}
 	return 0;
 }
 
 char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, osdialog_filters* filters) {
-	char* result = NULL;
-
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
-		wchar_t szDir[MAX_PATH] = L"";
-
 		BROWSEINFOW bInfo;
 		ZeroMemory(&bInfo, sizeof(bInfo));
 		bInfo.hwndOwner = GetActiveWindow();
-		// bInfo.pszDisplayName = szDir;
 		bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
-		bInfo.iImage = -1;
 
-		// TODO Default paths do not seem to work
-		wchar_t* pathW = NULL;
+		// path
+		wchar_t initialDir[MAX_PATH] = L"";
 		if (path) {
-			pathW = utf8_to_wchar(path);
+			// We need to convert the path to a canonical absolute path with GetFullPathNameW()
+			wchar_t* pathW = utf8_to_wchar(path);
+			GetFullPathNameW(pathW, MAX_PATH, initialDir, NULL);
+			OSDIALOG_FREE(pathW);
 			bInfo.lpfn = browseCallbackProc;
-			bInfo.lParam = (LPARAM) pathW;
+			bInfo.lParam = (LPARAM) initialDir;
 		}
 
 		PIDLIST_ABSOLUTE lpItem = SHBrowseForFolderW(&bInfo);
-		if (lpItem) {
-			SHGetPathFromIDListW(lpItem, szDir);
-			result = wchar_to_utf8(szDir);
+		if (!lpItem) {
+			return NULL;
 		}
-		if (pathW) {
-			OSDIALOG_FREE(pathW);
-		}
+		wchar_t szDir[MAX_PATH] = L"";
+		SHGetPathFromIDListW(lpItem, szDir);
+		return wchar_to_utf8(szDir);
 	}
 	else {
 		// open or save file dialog
 		OPENFILENAMEW ofn;
 		ZeroMemory(&ofn, sizeof(ofn));
-		ofn.hwndOwner = GetActiveWindow();
 		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = GetActiveWindow();
 		ofn.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
-		// Filename
+		// filename
 		wchar_t strFile[MAX_PATH] = L"";
 		if (filename) {
 			wchar_t* filenameW = utf8_to_wchar(filename);
@@ -127,14 +123,17 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		ofn.lpstrFile = strFile;
 		ofn.nMaxFile = MAX_PATH;
 
-		// Path
-		wchar_t* strInitialDir = NULL;
+		// path
+		wchar_t strInitialDir[MAX_PATH] = L"";
 		if (path) {
-			strInitialDir = utf8_to_wchar(path);
+			// We need to convert the path to a canonical absolute path with GetFullPathNameW()
+			wchar_t* pathW = utf8_to_wchar(path);
+			GetFullPathNameW(pathW, MAX_PATH, strInitialDir, NULL);
+			OSDIALOG_FREE(pathW);
+			ofn.lpstrInitialDir = strInitialDir;
 		}
-		ofn.lpstrInitialDir = strInitialDir;
 
-		// Filters
+		// filters
 		wchar_t* strFilter = NULL;
 		if (filters) {
 			char fBuf[4096];
@@ -168,18 +167,14 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		}
 
 		// Clean up
-		if (strInitialDir) {
-			OSDIALOG_FREE(strInitialDir);
-		}
 		if (strFilter) {
 			OSDIALOG_FREE(strFilter);
 		}
-		if (success) {
-			result = wchar_to_utf8(strFile);
+		if (!success) {
+			return NULL;
 		}
+		return wchar_to_utf8(strFile);
 	}
-
-	return result;
 }
 
 
