@@ -117,7 +117,7 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		wchar_t strFile[MAX_PATH] = L"";
 		if (filename) {
 			wchar_t* filenameW = utf8_to_wchar(filename);
-			snwprintf(strFile, MAX_PATH, L"%S", filenameW);
+			wcsncpy_s(strFile, MAX_PATH, filenameW, _TRUNCATE);
 			OSDIALOG_FREE(filenameW);
 		}
 		ofn.lpstrFile = strFile;
