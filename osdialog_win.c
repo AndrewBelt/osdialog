@@ -71,9 +71,9 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 }
 
 
-static INT CALLBACK browseCallbackProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+static INT CALLBACK browseCallbackProc(HWND hWnd, UINT Msg, LPARAM lParam, LPARAM lpData) {
 	if (Msg == BFFM_INITIALIZED) {
-		SendMessageW(hWnd, BFFM_SETEXPANDED, 1, lParam);
+		SendMessageW(hWnd, BFFM_SETEXPANDED, 1, lpData);
 	}
 	return 0;
 }
