@@ -9,11 +9,11 @@ If you decide to use osdialog in your project, [please let me know](https://gith
 
 ## Using
 
-There is only one header: simply add `inc/osdialog.h` to your include directory.
+For the header, simply add `inc/osdialog.h` to your include directory.
 
 For the sources, you have two options:
 
--   just add `src/osdialog.c` and the appropriate `src/osdialog_<toolkit>.(c|m)` file to your application's sources
+-   simply add `src/osdialog.c` and the appropriate `src/osdialog_<toolkit>.(c|m)` file to your application's sources
 -   ***or,*** produce a library using `cmake`:
     ```sh
     cmake -S . -B build/
