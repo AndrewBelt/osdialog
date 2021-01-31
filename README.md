@@ -13,12 +13,12 @@ There is only one header: simply add `inc/osdialog.h` to your include directory.
 
 For the sources, you have two options:
 
--   just add `osdialog.c` and the appropriate `osdialog_<toolkit>.c/.m` file to your application's sources
+-   just add `src/osdialog.c` and the appropriate `src/osdialog_<toolkit>.(c|m)` file to your application's sources
 -   ***or,*** produce a library using `cmake`:
-    -   ```sh
-        cmake -S . -B build/
-            # [-DOSDLG_TOOLKIT=<GTK|GTK3|ZENITY>]
-            # [-DOSDLG_BUILD_TESTS=<ON|OFF>]
-            # [-DBUILD_SHARED_LIBS=<ON|OFF>]
-        cmake --build build/
-        ```
+    ```sh
+    cmake -S . -B build/
+        # [-DOSDLG_TOOLKIT=<GTK|GTK3|ZENITY>]
+        # [-DOSDLG_BUILD_TESTS=<ON|OFF>]
+        # [-DBUILD_SHARED_LIBS=<ON|OFF>]
+    cmake --build build/
+    ```
