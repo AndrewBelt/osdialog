@@ -1,14 +1,24 @@
-# osdialog
+# `osdialog`
 
 A cross platform wrapper for OS dialogs like file save, open, message boxes, inputs, color picking, etc.
 
-Currently supports MacOS, Windows, and GTK2/GTK3 on Linux.
+Currently supports macOS, Windows, and GTK2/GTK3 on Linux.
 
-osdialog is released into the public domain [(CC0)](LICENSE.txt).
+`osdialog` is released into the public domain [(CC0)](LICENSE.txt).
 If you decide to use osdialog in your project, [please let me know](https://github.com/AndrewBelt/osdialog/issues/9).
 
 ## Using
 
-The Makefile is only for building the osdialog test binary.
-You don't need to use it for your application, but it might be helpful for suggesting compiler flags.
-Simply add `osdialog.h` to your include directory, and add `osdialog.c` and the appropriate `osdialog_*.c/.m` file to your application's sources.
+There is only one header: simply add `inc/osdialog.h` to your include directory.
+
+For the sources, you have two options:
+
+-   just add `osdialog.c` and the appropriate `osdialog_<toolkit>.c/.m` file to your application's sources
+-   ***or,*** produce a library using `cmake`:
+    -   ```sh
+        cmake -S . -B build/
+            # [-DOSDLG_TOOLKIT=<GTK|GTK3|ZENITY>]
+            # [-DOSDLG_BUILD_TESTS=<ON|OFF>]
+            # [-DBUILD_SHARED_LIBS=<ON|OFF>]
+        cmake --build build/
+        ```
