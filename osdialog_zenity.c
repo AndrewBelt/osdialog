@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -95,6 +96,11 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	args[argIndex++] = osdialog_strdup("--title");
 	args[argIndex++] = osdialog_strdup("");
 
+	args[argIndex++] = osdialog_strdup("--no-markup");
+
+	args[argIndex++] = osdialog_strdup("--width");
+	args[argIndex++] = osdialog_strdup("500");
+
 	if (buttons == OSDIALOG_OK_CANCEL) {
 		args[argIndex++] = osdialog_strdup("--question");
 		args[argIndex++] = osdialog_strdup("--ok-label");
@@ -155,6 +161,7 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 	args[argIndex++] = osdialog_strdup("");
 	args[argIndex++] = osdialog_strdup("--file-selection");
 	if (action == OSDIALOG_OPEN) {
+		// This is the default
 	}
 	else if (action == OSDIALOG_OPEN_DIR) {
 		args[argIndex++] = osdialog_strdup("--directory");
@@ -166,13 +173,17 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 
 	if (path) {
 		args[argIndex++] = osdialog_strdup("--filename");
-		args[argIndex++] = osdialog_strdup(path);
+		// If we don't add a slash, the open dialog will open in the parent directory.
+		// If a slash is already present, a second one will have no effect.
+		char buf[4096];
+		snprintf(buf, sizeof(buf), "%s/", path);
+		args[argIndex++] = osdialog_strdup(buf);
 	}
 
-	if (filters) {
+	for (osdialog_filters* filter = filters; filter; filter = filter->next) {
 		args[argIndex++] = osdialog_strdup("--file-filter");
-		// Only support the first filter and first pattern of that filter, out of laziness.
 		char buf[1024];
+		// TODO Add support for multiple patterns per filter
 		snprintf(buf, sizeof(buf), "%s|*.%s", filters->name, filters->patterns->pattern);
 		args[argIndex++] = osdialog_strdup(buf);
 	}
