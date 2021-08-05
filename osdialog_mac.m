@@ -182,7 +182,10 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 
 
 int osdialog_color_picker(osdialog_color* color, int opacity) {
-	assert(0);
+	(void) color;
+	(void) opacity;
+	// Not yet implemented
+	return 0;
 
 	@autoreleasepool {
 

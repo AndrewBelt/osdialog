@@ -3,9 +3,14 @@
 #include "osdialog.h"
 
 
-int main() {
+int main(int argc, char* argv[]) {
+	int test = -1;
+	if (argc >= 2) {
+		test = atoi(argv[1]);
+	}
+
 	// Message
-	if (1) {
+	if (test < 0 || test == 1) {
 		int res;
 
 		fprintf(stderr, "message info\n");
@@ -22,7 +27,7 @@ int main() {
 	}
 
 	// Prompt
-	if (1) {
+	if (test < 0 || test == 2) {
 		char* text;
 
 		fprintf(stderr, "prompt info\n");
@@ -57,7 +62,7 @@ int main() {
 	}
 
 	// Open directory with default arguments
-	if (1) {
+	if (test < 0 || test == 3) {
 		fprintf(stderr, "file open dir\n");
 		char* filename = osdialog_file(OSDIALOG_OPEN_DIR, NULL, NULL, NULL);
 		if (filename) {
@@ -70,7 +75,7 @@ int main() {
 	}
 
 	// Open file with default arguments
-	if (1) {
+	if (test < 0 || test == 4) {
 		fprintf(stderr, "file open\n");
 		char* filename = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
 		if (filename) {
@@ -83,7 +88,7 @@ int main() {
 	}
 
 	// Save file with default arguments
-	if (1) {
+	if (test < 0 || test == 5) {
 		fprintf(stderr, "file save\n");
 		char* filename = osdialog_file(OSDIALOG_SAVE, NULL, NULL, NULL);
 		if (filename) {
@@ -96,7 +101,7 @@ int main() {
 	}
 
 	// Open directory with custom arguments
-	if (1) {
+	if (test < 0 || test == 6) {
 		fprintf(stderr, "file open dir in cwd\n");
 		char* filename = osdialog_file(OSDIALOG_OPEN_DIR, ".", "こんにちは", NULL);
 		if (filename) {
@@ -109,7 +114,7 @@ int main() {
 	}
 
 	// Open file with custom arguments
-	if (1) {
+	if (test < 0 || test == 7) {
 		fprintf(stderr, "file open in cwd\n");
 		osdialog_filters* filters = osdialog_filters_parse("Source:c,cpp,m;Header:h,hpp");
 		char* filename = osdialog_file(OSDIALOG_OPEN, ".", "こんにちは", filters);
@@ -124,7 +129,7 @@ int main() {
 	}
 
 	// Save file with custom arguments
-	if (1) {
+	if (test < 0 || test == 8) {
 		osdialog_filters* filters = osdialog_filters_parse("Source:c,cpp,m;Header:h,hpp");
 		fprintf(stderr, "file save in cwd\n");
 		char* filename = osdialog_file(OSDIALOG_SAVE, ".", "こんにちは", filters);
@@ -139,7 +144,7 @@ int main() {
 	}
 
 	// Color selector
-	if (1) {
+	if (test < 0 || test == 9) {
 		int res;
 		osdialog_color color = {255, 0, 255, 255};
 		fprintf(stderr, "color picker\n");
