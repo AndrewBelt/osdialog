@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <string.h>
 #include <gtk/gtk.h>
 #include "osdialog.h"
@@ -6,7 +5,8 @@
 
 
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
-	assert(gtk_init_check(NULL, NULL));
+	if (!gtk_init_check(NULL, NULL))
+		return 0;
 
 	GtkMessageType messageType;
 	switch (level) {
@@ -37,7 +37,8 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 
 char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
-	assert(gtk_init_check(NULL, NULL));
+	if (!gtk_init_check(NULL, NULL))
+		return 0;
 
 	GtkMessageType messageType;
 	switch (level) {
@@ -73,7 +74,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 
 char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, osdialog_filters* filters) {
-	assert(gtk_init_check(NULL, NULL));
+	if (!gtk_init_check(NULL, NULL))
+		return 0;
 
 	GtkFileChooserAction gtkAction;
 	const char* title;
@@ -143,7 +145,8 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 int osdialog_color_picker(osdialog_color* color, int opacity) {
 	if (!color)
 		return 0;
-	assert(gtk_init_check(NULL, NULL));
+	if (!gtk_init_check(NULL, NULL))
+		return 0;
 
 #ifdef OSDIALOG_GTK3
 	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);

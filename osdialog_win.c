@@ -1,6 +1,5 @@
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
 #include <windows.h>
 #include <commdlg.h>
 #include <shlobj.h>
@@ -66,7 +65,6 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 	(void) level;
 	(void) message;
 	(void) text;
-	assert(0);
 	return NULL;
 }
 
