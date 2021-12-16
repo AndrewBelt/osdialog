@@ -92,7 +92,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 		if (button == NSAlertFirstButtonReturn) {
 			[input validateEditing];
 			NSString* result_str = [input stringValue];
-			result = osdialog_strndup([result_str UTF8String], [result_str length]);
+			// Don't use NSString.length because it returns the number of the UTF-16 code units, not the number of bytes.
+			result = osdialog_strdup([result_str UTF8String]);
 		}
 
 		[keyWindow makeKeyAndOrderFront:nil];
@@ -171,7 +172,8 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		if (response == OK) {
 			NSURL* result_url = [panel URL];
 			NSString* result_str = [result_url path];
-			result = osdialog_strndup([result_str UTF8String], [result_str length]);
+			// Don't use NSString.length because it returns the number of the UTF-16 code units, not the number of bytes.
+			result = osdialog_strdup([result_str UTF8String]);
 		}
 
 		[keyWindow makeKeyAndOrderFront:nil];
