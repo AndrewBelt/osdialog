@@ -151,7 +151,7 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 }
 
 
-char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, osdialog_filters* filters) {
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
 	char* args[32];
 	int argIndex = 0;
 
@@ -170,12 +170,12 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		args[argIndex++] = osdialog_strdup("--confirm-overwrite");
 	}
 
-	if (path) {
+	if (dir) {
 		args[argIndex++] = osdialog_strdup("--filename");
 		// If we don't add a slash, the open dialog will open in the parent directory.
 		// If a slash is already present, a second one will have no effect.
 		char buf[4096];
-		snprintf(buf, sizeof(buf), "%s/", path);
+		snprintf(buf, sizeof(buf), "%s/", dir);
 		args[argIndex++] = osdialog_strdup(buf);
 	}
 

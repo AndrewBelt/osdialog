@@ -229,7 +229,7 @@ static INT CALLBACK browseCallbackProc(HWND hWnd, UINT message, WPARAM wParam, L
 	return 0;
 }
 
-char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, osdialog_filters* filters) {
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
 		BROWSEINFOW bInfo;
@@ -237,13 +237,13 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		bInfo.hwndOwner = GetActiveWindow();
 		bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
 
-		// path
+		// dir
 		wchar_t initialDir[MAX_PATH] = L"";
-		if (path) {
+		if (dir) {
 			// We need to convert the path to a canonical absolute path with GetFullPathNameW()
-			wchar_t* pathW = utf8_to_wchar(path);
-			GetFullPathNameW(pathW, MAX_PATH, initialDir, NULL);
-			OSDIALOG_FREE(pathW);
+			wchar_t* dirW = utf8_to_wchar(dir);
+			GetFullPathNameW(dirW, MAX_PATH, initialDir, NULL);
+			OSDIALOG_FREE(dirW);
 			bInfo.lpfn = (BFFCALLBACK) browseCallbackProc;
 			bInfo.lParam = (LPARAM) initialDir;
 		}
@@ -274,13 +274,13 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		ofn.lpstrFile = strFile;
 		ofn.nMaxFile = MAX_PATH;
 
-		// path
+		// dir
 		wchar_t strInitialDir[MAX_PATH] = L"";
-		if (path) {
-			// We need to convert the path to a canonical absolute path with GetFullPathNameW()
-			wchar_t* pathW = utf8_to_wchar(path);
-			GetFullPathNameW(pathW, MAX_PATH, strInitialDir, NULL);
-			OSDIALOG_FREE(pathW);
+		if (dir) {
+			// We need to convert the dir to a canonical absolute dir with GetFullPathNameW()
+			wchar_t* dirW = utf8_to_wchar(dir);
+			GetFullPathNameW(dirW, MAX_PATH, strInitialDir, NULL);
+			OSDIALOG_FREE(dirW);
 			ofn.lpstrInitialDir = strInitialDir;
 		}
 

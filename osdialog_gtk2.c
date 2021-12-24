@@ -73,7 +73,7 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 }
 
 
-char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, osdialog_filters* filters) {
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
 	if (!gtk_init_check(NULL, NULL))
 		return 0;
 
@@ -118,8 +118,8 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 	if (action == OSDIALOG_SAVE)
 		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
-	if (path)
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), path);
+	if (dir)
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), dir);
 
 	if (action == OSDIALOG_SAVE && filename)
 		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), filename);

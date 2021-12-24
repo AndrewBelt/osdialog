@@ -103,7 +103,7 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 }
 
 
-char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, osdialog_filters* filters) {
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
 	@autoreleasepool {
 
 		NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
@@ -150,10 +150,10 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 			[open_panel setCanChooseFiles:NO];
 		}
 
-		if (path) {
-			NSString* path_str = [NSString stringWithUTF8String:path];
-			NSURL* path_url = [NSURL fileURLWithPath:path_str];
-			[panel setDirectoryURL:path_url];
+		if (dir) {
+			NSString* dir_str = [NSString stringWithUTF8String:dir];
+			NSURL* dir_url = [NSURL fileURLWithPath:dir_str];
+			[panel setDirectoryURL:dir_url];
 		}
 
 		if (filename) {
