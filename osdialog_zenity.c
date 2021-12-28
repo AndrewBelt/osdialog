@@ -141,13 +141,25 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 	args[argIndex++] = osdialog_strdup(zenityBin);
 	args[argIndex++] = osdialog_strdup("--title");
 	args[argIndex++] = osdialog_strdup("");
+	args[argIndex++] = osdialog_strdup("--entry");
+	args[argIndex++] = osdialog_strdup("--text");
+	args[argIndex++] = osdialog_strdup(message ? message : "");
+	args[argIndex++] = osdialog_strdup("--entry-text");
+	args[argIndex++] = osdialog_strdup(text ? text : "");
 	// Unfortunately the level is ignored
 
 	args[argIndex++] = NULL;
-	int ret = string_list_exec(zenityBin, (const char* const*) args, NULL, 0, NULL, 0);
+	char outBuf[4096 + 1];
+	int ret = string_list_exec(zenityBin, (const char* const*) args, outBuf, sizeof(outBuf), NULL, 0);
 	string_list_clear(args);
-	// TODO
-	return NULL;
+	if (ret != 0)
+		return NULL;
+
+	// Remove trailing newline
+	size_t outLen = strlen(outBuf);
+	if (outLen > 0)
+		outBuf[outLen - 1] = '\0';
+	return osdialog_strdup(outBuf);
 }
 
 
