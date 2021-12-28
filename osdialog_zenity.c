@@ -7,7 +7,7 @@
 #include "osdialog.h"
 
 
-static const char zenityBin[] = "/usr/bin/zenity";
+static const char zenityBin[] = "zenity";
 
 
 static void string_list_clear(char** list) {
@@ -49,8 +49,8 @@ static int string_list_exec(const char* path, const char* const* args, char* out
 			close(errStream[0]);
 			close(errStream[1]);
 		}
-		// POSIX guarantees that execv does not modify the args array, so it's safe to remove const with a cast.
-		int err = execv(path, (char* const*) args);
+		// POSIX guarantees that execvp does not modify the args array, so it's safe to remove const with a cast.
+		int err = execvp(path, (char* const*) args);
 		if (err)
 			exit(0);
 		// Will never reach
