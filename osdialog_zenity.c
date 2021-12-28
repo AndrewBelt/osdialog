@@ -221,12 +221,41 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	args[argIndex++] = osdialog_strdup(zenityBin);
 	args[argIndex++] = osdialog_strdup("--title");
 	args[argIndex++] = osdialog_strdup("");
-	// Unfortunately the level is ignored
 	args[argIndex++] = osdialog_strdup("--color-selection");
 
+	if (!opacity) {
+		color->a = 255;
+	}
+
+	// Convert osdialog_color to string
+	char buf[128];
+	snprintf(buf, sizeof(buf), "rgba(%d,%d,%d,%f)", color->r, color->g, color->b, color->a / 255.f);
+	args[argIndex++] = osdialog_strdup("--color");
+	args[argIndex++] = osdialog_strdup(buf);
+
 	args[argIndex++] = NULL;
-	int ret = string_list_exec(zenityBin, (const char* const*) args, NULL, 0, NULL, 0);
+	int ret = string_list_exec(zenityBin, (const char* const*) args, buf, sizeof(buf), NULL, 0);
 	string_list_clear(args);
-	// TODO
-	return 0;
+	if (ret != 0)
+		return 0;
+
+	// Convert string to osdialog_color
+	int r = 0, g = 0, b = 0;
+	float a = 1.f;
+	if (buf[3] == 'a') {
+		sscanf(buf, "rgba(%d,%d,%d,%f)", &r, &g, &b, &a);
+	}
+	else {
+		sscanf(buf, "rgb(%d,%d,%d)", &r, &g, &b);
+	}
+	color->r = r;
+	color->g = g;
+	color->b = b;
+	color->a = (int) (a * 255.f);
+
+	if (!opacity) {
+		color->a = 255;
+	}
+
+	return 1;
 }
