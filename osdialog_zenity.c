@@ -182,12 +182,17 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		args[argIndex++] = osdialog_strdup("--confirm-overwrite");
 	}
 
-	if (dir) {
+	if (dir || filename) {
 		args[argIndex++] = osdialog_strdup("--filename");
-		// If we don't add a slash, the open dialog will open in the parent directory.
-		// If a slash is already present, a second one will have no effect.
 		char buf[4096];
-		snprintf(buf, sizeof(buf), "%s/", dir);
+		if (dir) {
+			// If we don't add a slash, the open dialog will open in the parent directory.
+			// If a slash is already present, a second one will have no effect.
+			snprintf(buf, sizeof(buf), "%s/%s", dir, filename ? filename : "");
+		}
+		else {
+			snprintf(buf, sizeof(buf), "%s", filename);
+		}
 		args[argIndex++] = osdialog_strdup(buf);
 	}
 
