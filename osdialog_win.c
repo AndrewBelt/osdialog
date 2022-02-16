@@ -292,14 +292,17 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 			for (; filters; filters = filters->next) {
 				fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "%s", filters->name);
+				if (fLen + 1 >= sizeof(fBuf)) return NULL;
 				fBuf[fLen++] = '\0';
 				for (osdialog_filter_patterns* patterns = filters->patterns; patterns; patterns = patterns->next) {
 					fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "*.%s", patterns->pattern);
 					if (patterns->next)
 						fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, ";");
 				}
+				if (fLen + 1 >= sizeof(fBuf)) return NULL;
 				fBuf[fLen++] = '\0';
 			}
+			if (fLen + 1 >= sizeof(fBuf)) return NULL;
 			fBuf[fLen++] = '\0';
 
 			// Don't use utf8_to_wchar() because this is not a NULL-terminated string.
