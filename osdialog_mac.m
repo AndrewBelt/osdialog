@@ -112,7 +112,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		// NSOpenPanel is a subclass of NSSavePanel. Not defined for OSDIALOG_SAVE.
 		NSOpenPanel* open_panel;
 
-		if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
+		if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR || action == OSDIALOG_OPEN_MULTIPLE) {
 			panel = open_panel = [NSOpenPanel openPanel];
 		}
 		else {
@@ -140,6 +140,10 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
 			[open_panel setAllowsMultipleSelection:NO];
 		}
+		else if (action == OSDIALOG_OPEN_MULTIPLE) {
+			[open_panel setAllowsMultipleSelection:YES];
+		}
+
 		if (action == OSDIALOG_OPEN) {
 			[open_panel setCanChooseDirectories:NO];
 			[open_panel setCanChooseFiles:YES];
@@ -170,10 +174,32 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 #define OK NSOKButton
 #endif
 		if (response == OK) {
-			NSURL* result_url = [panel URL];
-			NSString* result_str = [result_url path];
-			// Don't use NSString.length because it returns the number of the UTF-16 code units, not the number of bytes.
-			result = osdialog_strdup([result_str UTF8String]);
+			if (action != OSDIALOG_OPEN_MULTIPLE) {
+				NSURL* result_url = [panel URL];
+				NSString* result_str = [result_url path];
+				// Don't use NSString.length because it returns the number of the UTF-16 code units, not the number of bytes.
+				result = osdialog_strdup([result_str UTF8String]);
+			}
+			else {
+				// note: can't use NSMutableString and appendString; it doens't handle the null bytes right
+				NSArray<NSURL*>* results = [panel URLs];
+
+				int resultLen = 2;
+				for (NSURL *fileURL in results) {
+					resultLen += strlen([[fileURL path] UTF8String]) + 1;
+				}
+
+				result = OSDIALOG_MALLOC(resultLen);
+				memset(result, 0, resultLen);
+				char* resultPos = result;
+
+				for (NSURL *fileURL in results) {
+					const char* pathUTF8 = [[fileURL path] UTF8String];
+					int len = strlen(pathUTF8);
+					memcpy(resultPos, pathUTF8, len + 1);
+					resultPos += len + 1;
+				}
+			}
 		}
 
 		[keyWindow makeKeyAndOrderFront:nil];

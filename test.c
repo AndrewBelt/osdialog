@@ -157,5 +157,22 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "\t#%02x%02x%02x%02x\n", color.r, color.g, color.b, color.a);
 	}
 
+	// Open multiple files
+	if (test < 0 || test == 10) {
+		fprintf(stderr, "multi file open in cwd\n");
+		char* filename = osdialog_file(OSDIALOG_OPEN_MULTIPLE, ".", "こんにちは", NULL);
+		if (filename) {
+			char* file = filename;
+			while (strlen(file)) {
+				fprintf(stderr, "\t%s\n", file);
+				file += strlen(file) + 1;
+			}
+			free(filename);
+		}
+		else {
+			fprintf(stderr, "\tCanceled\n");
+		}
+	}
+
 	return 0;
 }

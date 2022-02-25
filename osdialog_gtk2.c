@@ -85,6 +85,11 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		acceptText = "Open";
 		gtkAction = GTK_FILE_CHOOSER_ACTION_OPEN;
 	}
+	else if (action == OSDIALOG_OPEN_MULTIPLE) {
+		title = "Open Files";
+		acceptText = "Open";
+		gtkAction = GTK_FILE_CHOOSER_ACTION_OPEN;
+	}
 	else if (action == OSDIALOG_OPEN_DIR) {
 		title = "Open Folder";
 		acceptText = "Open Folder";
@@ -115,6 +120,9 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), fileFilter);
 	}
 
+	if (action == OSDIALOG_OPEN_MULTIPLE)
+		gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
+
 	if (action == OSDIALOG_SAVE)
 		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
@@ -124,16 +132,44 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 	if (action == OSDIALOG_SAVE && filename)
 		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), filename);
 
-	char* chosen_filename = NULL;
+	GSList* chosenFiles = NULL;
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-		chosen_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		chosenFiles = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
 	}
 	gtk_widget_destroy(dialog);
 
 	char* result = NULL;
-	if (chosen_filename) {
-		result = osdialog_strndup(chosen_filename, strlen(chosen_filename));
-		g_free(chosen_filename);
+	if (chosenFiles) {
+		if (action != OSDIALOG_OPEN_MULTIPLE) {
+			result = osdialog_strndup(chosenFiles->data, strlen(chosenFiles->data));
+			g_free(chosenFiles->data);
+		}
+		else {
+			// calculate result length
+			int resultLen = 2;// include space for full terminator in case of an empty list
+			GSList* item = chosenFiles;
+			while (item) {
+				resultLen += strlen(item->data) + 1;
+				item = item->next;
+			}
+
+			result = OSDIALOG_MALLOC(resultLen);
+			memset(result, 0, resultLen);
+			char* resultPos = result;
+
+			item = chosenFiles;
+			while (item) {
+				int len = strlen(item->data);
+				memcpy(resultPos, item->data, len + 1);
+				resultPos += len + 1;
+
+				g_free(item->data);
+				item = item->next;
+			}
+			// final terminator was nulled via memset earlier
+		}
+
+		g_slist_free(chosenFiles);
 	}
 
 	while (gtk_events_pending())

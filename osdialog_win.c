@@ -5,6 +5,9 @@
 #include <shlobj.h>
 #include "osdialog.h"
 
+#define snprintf(buf, len, format,...) _snprintf_s(buf, len, len, format, __VA_ARGS__)
+#define snwprintf(buf, len, format,...) _snwprintf_s(buf, len, len, format, __VA_ARGS__)
+
 
 static char* wchar_to_utf8(const wchar_t* s) {
 	if (!s)
@@ -265,14 +268,15 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		ofn.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 		// filename
-		wchar_t strFile[MAX_PATH] = L"";
+		#define MAX_RESULT_SIZE (1024 * 10)
+		wchar_t strFile[MAX_RESULT_SIZE] = L"";
 		if (filename) {
 			wchar_t* filenameW = utf8_to_wchar(filename);
-			snwprintf(strFile, MAX_PATH, L"%S", filenameW);
+			snwprintf(strFile, MAX_RESULT_SIZE, L"%lS", filenameW);
 			OSDIALOG_FREE(filenameW);
 		}
 		ofn.lpstrFile = strFile;
-		ofn.nMaxFile = MAX_PATH;
+		ofn.nMaxFile = MAX_RESULT_SIZE;
 
 		// dir
 		wchar_t strInitialDir[MAX_PATH] = L"";
@@ -292,14 +296,17 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 			for (; filters; filters = filters->next) {
 				fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "%s", filters->name);
+				if (fLen + 1 >= sizeof(fBuf)) return NULL;
 				fBuf[fLen++] = '\0';
 				for (osdialog_filter_patterns* patterns = filters->patterns; patterns; patterns = patterns->next) {
 					fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "*.%s", patterns->pattern);
 					if (patterns->next)
 						fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, ";");
 				}
+				if (fLen + 1 >= sizeof(fBuf)) return NULL;
 				fBuf[fLen++] = '\0';
 			}
+			if (fLen + 1 >= sizeof(fBuf)) return NULL;
 			fBuf[fLen++] = '\0';
 
 			// Don't use utf8_to_wchar() because this is not a NULL-terminated string.
@@ -310,7 +317,11 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		}
 
 		BOOL success;
-		if (action == OSDIALOG_OPEN) {
+		if (action == OSDIALOG_OPEN_MULTIPLE) {
+			ofn.Flags |= OFN_ALLOWMULTISELECT;
+			success = GetOpenFileNameW(&ofn);
+		}
+		else if (action == OSDIALOG_OPEN) {
 			success = GetOpenFileNameW(&ofn);
 		}
 		else {
@@ -324,7 +335,73 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		if (!success) {
 			return NULL;
 		}
-		return wchar_to_utf8(strFile);
+
+		if (action == OSDIALOG_OPEN_MULTIPLE) {
+			// GetOpenFileNameW returns [dirname, file, file, ...] as a null-seperated list of null-terminated strings
+
+			if (strFile[0] == 0 && strFile[1] == 0) return NULL;
+
+			const wchar_t* dirname = strFile;
+			int dirnameUTF8Len = WideCharToMultiByte(CP_UTF8, 0, dirname, -1, NULL, 0, NULL, NULL) - 1;
+
+			// get stats
+			int filesUTF8Len = 0;
+			int numFiles = 0;
+			const wchar_t* lastItemStart = strFile;
+			const wchar_t* firstFile = NULL;
+			for (int i = 0; i < MAX_RESULT_SIZE - 1; i++) {
+				if (strFile[i] == 0) {
+					++numFiles;
+					if (!firstFile && lastItemStart != dirname) firstFile = lastItemStart;
+					filesUTF8Len += WideCharToMultiByte(CP_UTF8, 0, lastItemStart, -1, NULL, 0, NULL, NULL) - 1;
+
+					lastItemStart = &strFile[i + 1];
+					if (strFile[i + 1] == 0) break; // end of list
+				}
+			}
+
+			if (numFiles == 1) {
+				// ...but if there's only one file GetOpenFileNameW just returns a single item with the dirname added
+				return wchar_to_utf8(strFile);
+			}
+
+			// right now numFiles/filesUTF8Len include dirname (first entry), correct
+			filesUTF8Len -= dirnameUTF8Len;
+			--numFiles;
+
+			int resultUTF8Len = (dirnameUTF8Len + 2) * numFiles + filesUTF8Len + 1;// dirname + '/' + file + '\0'
+			char* ret = OSDIALOG_MALLOC(resultUTF8Len);
+			memset(ret, 0, resultUTF8Len);
+
+			// convert chars and build result
+			lastItemStart = firstFile;
+			char* retPos = ret;
+			for (int i = firstFile - strFile; i < MAX_RESULT_SIZE - 1; i++) {
+				if (strFile[i] == 0) {// i is at the end of a filename
+					// write dir
+					WideCharToMultiByte(CP_UTF8, 0, dirname, -1, retPos, dirnameUTF8Len, NULL, NULL);
+					retPos += dirnameUTF8Len;
+
+					*retPos = '\\'; ++retPos;
+
+					// write file
+					int fileUTF8Len = WideCharToMultiByte(CP_UTF8, 0, lastItemStart, -1, NULL, 0, NULL, NULL) - 1;
+					WideCharToMultiByte(CP_UTF8, 0, lastItemStart, -1, retPos, fileUTF8Len, NULL, NULL);
+					retPos += fileUTF8Len;
+
+					*retPos = '\0'; ++retPos;
+
+					lastItemStart = &strFile[i + 1];
+
+					if (strFile[i + 1] == 0) break; // end of list, memset earlier already wrote a final '\0'
+				}
+			}
+
+			return ret;
+		}
+		else {
+			return wchar_to_utf8(strFile);
+		}
 	}
 }
 
