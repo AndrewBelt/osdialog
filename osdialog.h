@@ -59,7 +59,6 @@ typedef enum {
 	/**
 	Select multiple files.
 	Results returned as a null-seperated list of null-terminated strings, ending with a final '\0'.
-	Windows/GTK2/GKT3/Mac only.
 	*/
 	OSDIALOG_OPEN_MULTIPLE,
 } osdialog_file_action;

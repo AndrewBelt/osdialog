@@ -174,6 +174,13 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 	if (action == OSDIALOG_OPEN) {
 		// This is the default
 	}
+	else if (action == OSDIALOG_OPEN_MULTIPLE) {
+		args[argIndex++] = osdialog_strdup("--multiple");
+		// separate file names with \x1E "record seperator" because the default "|" can casually appear in
+		// filenames and using \x00 for a seperator isn't an option
+		#define FILE_SEP_CHAR '\x1E'
+		args[argIndex++] = osdialog_strdup("--separator=\x1E");
+	}
 	else if (action == OSDIALOG_OPEN_DIR) {
 		args[argIndex++] = osdialog_strdup("--directory");
 	}
@@ -205,17 +212,36 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 	}
 
 	args[argIndex++] = NULL;
-	char outBuf[4096 + 1];
+	char outBuf[1024 * 10];
 	int ret = string_list_exec(zenityBin, (const char* const*) args, outBuf, sizeof(outBuf), NULL, 0);
 	string_list_clear(args);
 	if (ret != 0)
 		return NULL;
 
-	// Remove trailing newline
-	size_t outLen = strlen(outBuf);
-	if (outLen > 0)
-		outBuf[outLen - 1] = '\0';
-	return osdialog_strdup(outBuf);
+	if (action != OSDIALOG_OPEN_MULTIPLE) {
+		// Remove trailing newline
+		size_t outLen = strlen(outBuf);
+		if (outLen > 0)
+			outBuf[outLen - 1] = '\0';
+		return osdialog_strdup(outBuf);
+	}
+	else {
+		if (!strlen(outBuf)) return NULL;
+
+		// nix the ending newline, and make sure there's a \x00\x00 at the end
+		size_t resultLen = strlen(outBuf) + (2 - 1);
+		char* result = OSDIALOG_MALLOC(resultLen);
+		memcpy(result, outBuf, resultLen - 2);
+		result[resultLen - 1] = 0;
+		result[resultLen - 2] = 0;
+
+		// Convert \x1E to \x00,
+		for (size_t i = 0; i < resultLen; i++) {
+			if (result[i] == FILE_SEP_CHAR) result[i] = 0;
+		}
+
+		return result;
+	}
 }
 
 
