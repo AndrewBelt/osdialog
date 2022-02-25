@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
 
 
 #ifndef OSDIALOG_MALLOC
@@ -58,7 +59,7 @@ typedef enum {
 	/**
 	Select multiple files.
 	Results returned as a null-seperated list of null-terminated strings, ending with a final '\0'.
-	Windows only.
+	Windows/GTK2/GKT3 only.
 	*/
 	OSDIALOG_OPEN_MULTIPLE,
 } osdialog_file_action;
