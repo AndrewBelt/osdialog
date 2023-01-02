@@ -135,6 +135,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 
 char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
+	(void) level;
 	char* args[32];
 	int argIndex = 0;
 
@@ -198,10 +199,20 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 	for (osdialog_filters* filter = filters; filter; filter = filter->next) {
 		args[argIndex++] = osdialog_strdup("--file-filter");
-		char buf[1024];
-		// TODO Add support for multiple patterns per filter
-		snprintf(buf, sizeof(buf), "%s|*.%s", filters->name, filters->patterns->pattern);
-		args[argIndex++] = osdialog_strdup(buf);
+
+		// Set pattern name
+		char patternBuf[1024];
+		char* patternPtr = patternBuf;
+		const char* patternEnd = patternBuf + sizeof(patternBuf);
+		patternPtr += snprintf(patternPtr, patternEnd - patternPtr, "%s |", filter->name);
+
+		// Append pattern
+		for (osdialog_filter_patterns* pattern = filter->patterns; pattern; pattern = pattern->next) {
+			if (patternPtr >= patternEnd)
+				break;
+			patternPtr += snprintf(patternPtr, patternEnd - patternPtr, " *.%s", pattern->pattern);
+		}
+		args[argIndex++] = osdialog_strdup(patternBuf);
 	}
 
 	args[argIndex++] = NULL;
