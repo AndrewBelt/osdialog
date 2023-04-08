@@ -164,6 +164,28 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 }
 
 
+static int supports_confirm_overwrite() {
+	char* args[32];
+	int argIndex = 0;
+
+	args[argIndex++] = osdialog_strdup(zenityBin);
+	args[argIndex++] = osdialog_strdup("--help-file-selection");
+	args[argIndex++] = NULL;
+
+	char outBuf[1 << 12];
+	int ret = string_list_exec(zenityBin, (const char* const*) args, outBuf, sizeof(outBuf), NULL, 0);
+	string_list_clear(args);
+
+	if (ret != 0)
+		return 0;
+
+	return strstr(outBuf, "--confirm-overwrite") != NULL;
+}
+
+
+static int supports_confirm_overwrite_cached = -1;
+
+
 char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
 	char* args[32];
 	int argIndex = 0;
@@ -180,8 +202,14 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 	}
 	else if (action == OSDIALOG_SAVE) {
 		args[argIndex++] = osdialog_strdup("--save");
+
 		// --confirm-overwrite was (accidentally?) removed in Zenity 3.91.0, so using this flag causes Zenity to fail.
-		// args[argIndex++] = osdialog_strdup("--confirm-overwrite");
+		if (supports_confirm_overwrite_cached < 0) {
+			supports_confirm_overwrite_cached = supports_confirm_overwrite();
+		}
+		if (supports_confirm_overwrite_cached) {
+			args[argIndex++] = osdialog_strdup("--confirm-overwrite");
+		}
 	}
 
 	if (dir || filename) {
