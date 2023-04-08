@@ -180,7 +180,8 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 	}
 	else if (action == OSDIALOG_SAVE) {
 		args[argIndex++] = osdialog_strdup("--save");
-		args[argIndex++] = osdialog_strdup("--confirm-overwrite");
+		// --confirm-overwrite was (accidentally?) removed in Zenity 3.91.0, so using this flag causes Zenity to fail.
+		// args[argIndex++] = osdialog_strdup("--confirm-overwrite");
 	}
 
 	if (dir || filename) {
