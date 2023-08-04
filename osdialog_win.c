@@ -6,6 +6,21 @@
 #include "osdialog.h"
 
 
+extern osdialog_save_callback osdialog_save_cb;
+extern osdialog_restore_callback osdialog_restore_cb;
+
+#define SAVE_CALLBACK \
+	void* cb_ptr = NULL; \
+	if (osdialog_save_cb) { \
+		cb_ptr = osdialog_save_cb(); \
+	}
+
+#define RESTORE_CALLBACK \
+	if (osdialog_restore_cb) { \
+		osdialog_restore_cb(cb_ptr); \
+	}
+
+
 static char* wchar_to_utf8(const wchar_t* s) {
 	if (!s)
 		return NULL;
@@ -30,6 +45,8 @@ static wchar_t* utf8_to_wchar(const char* s) {
 
 
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
+	SAVE_CALLBACK
+
 	UINT type = MB_APPLMODAL;
 	switch (level) {
 		default:
@@ -49,6 +66,8 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	wchar_t* messageW = utf8_to_wchar(message);
 	int result = MessageBoxW(window, messageW, L"", type);
 	OSDIALOG_FREE(messageW);
+
+	RESTORE_CALLBACK
 
 	switch (result) {
 		case IDOK:
@@ -206,6 +225,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 	(void) level;
 	(void) message;
 
+	SAVE_CALLBACK
+
 	promptBuffer[0] = 0;
 	if (text) {
 		MultiByteToWideChar(CP_UTF8, 0, text, -1, promptBuffer, LENGTHOF(promptBuffer));
@@ -213,6 +234,9 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 	HWND window = GetActiveWindow();
 	int res = DialogBoxIndirectParamW(NULL, (LPCDLGTEMPLATEW) &promptTemplate, window, promptProc, (LPARAM) NULL);
+
+	RESTORE_CALLBACK
+
 	if (res) {
 		return wchar_to_utf8(promptBuffer);
 	}
@@ -230,6 +254,8 @@ static INT CALLBACK browseCallbackProc(HWND hWnd, UINT message, WPARAM wParam, L
 }
 
 char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
+	SAVE_CALLBACK
+
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
 		BROWSEINFOW bInfo;
@@ -249,6 +275,9 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		}
 
 		PIDLIST_ABSOLUTE lpItem = SHBrowseForFolderW(&bInfo);
+
+		RESTORE_CALLBACK
+
 		if (!lpItem) {
 			return NULL;
 		}
@@ -321,6 +350,9 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		if (strFilter) {
 			OSDIALOG_FREE(strFilter);
 		}
+
+		RESTORE_CALLBACK
+
 		if (!success) {
 			return NULL;
 		}
@@ -331,6 +363,8 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 int osdialog_color_picker(osdialog_color* color, int opacity) {
 	(void) opacity;
+	SAVE_CALLBACK
+
 	if (!color)
 		return 0;
 
@@ -345,7 +379,11 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	cc.rgbResult = c;
 	cc.Flags = CC_FULLOPEN | CC_ANYCOLOR | CC_RGBINIT;
 
-	if (ChooseColor(&cc)) {
+	bool success = ChooseColor(&cc);
+
+	RESTORE_CALLBACK
+
+	if (success) {
 		color->r = GetRValue(cc.rgbResult);
 		color->g = GetGValue(cc.rgbResult);
 		color->b = GetBValue(cc.rgbResult);

@@ -107,6 +107,20 @@ TODO Implement on Mac.
 int osdialog_color_picker(osdialog_color* color, int opacity);
 
 
+typedef void* (*osdialog_save_callback)();
+typedef void (*osdialog_restore_callback)(void* ptr);
+
+/** Sets callback that is called before each dialog is opened.
+This is useful for saving/restoring global state that an OS dialog might modify.
+*/
+void osdialog_set_save_callback(osdialog_save_callback cb);
+
+/** Sets callback that is called after each dialog is closed.
+The pointer returned by osdialog_save_callback() is passed as an argument to osdialog_restore_callback().
+*/
+void osdialog_set_restore_callback(osdialog_restore_callback cb);
+
+
 #ifdef __cplusplus
 }
 #endif

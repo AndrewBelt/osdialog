@@ -3,10 +3,26 @@
 #include "osdialog.h"
 
 
+extern osdialog_save_callback osdialog_save_cb;
+extern osdialog_restore_callback osdialog_restore_cb;
+
+#define SAVE_CALLBACK \
+	void* cb_ptr = NULL; \
+	if (osdialog_save_cb) { \
+		cb_ptr = osdialog_save_cb(); \
+	}
+
+#define RESTORE_CALLBACK \
+	if (osdialog_restore_cb) { \
+		osdialog_restore_cb(cb_ptr); \
+	}
+
 
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
 	if (!gtk_init_check(NULL, NULL))
 		return 0;
+
+	SAVE_CALLBACK
 
 	GtkMessageType messageType;
 	switch (level) {
@@ -32,6 +48,8 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	while (gtk_events_pending())
 		gtk_main_iteration();
 
+	RESTORE_CALLBACK
+
 	return (result == GTK_RESPONSE_OK || result == GTK_RESPONSE_YES);
 }
 
@@ -39,6 +57,8 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
 	if (!gtk_init_check(NULL, NULL))
 		return 0;
+
+	SAVE_CALLBACK
 
 	GtkMessageType messageType;
 	switch (level) {
@@ -69,6 +89,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 	while (gtk_events_pending())
 		gtk_main_iteration();
 
+	RESTORE_CALLBACK
+
 	return result;
 }
 
@@ -76,6 +98,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
 	if (!gtk_init_check(NULL, NULL))
 		return 0;
+
+	SAVE_CALLBACK
 
 	GtkFileChooserAction gtkAction;
 	const char* title;
@@ -138,6 +162,9 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
+
+	RESTORE_CALLBACK
+
 	return result;
 }
 
@@ -147,6 +174,8 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 		return 0;
 	if (!gtk_init_check(NULL, NULL))
 		return 0;
+
+	SAVE_CALLBACK
 
 #ifdef OSDIALOG_GTK3
 	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);
@@ -183,5 +212,8 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
+
+	RESTORE_CALLBACK
+
 	return result;
 }

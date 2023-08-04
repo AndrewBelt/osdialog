@@ -3,8 +3,24 @@
 #include "osdialog.h"
 
 
+extern osdialog_save_callback osdialog_save_cb;
+extern osdialog_restore_callback osdialog_restore_cb;
+
+#define SAVE_CALLBACK \
+	void* cb_ptr = NULL; \
+	if (osdialog_save_cb) { \
+		cb_ptr = osdialog_save_cb(); \
+	}
+
+#define RESTORE_CALLBACK \
+	if (osdialog_restore_cb) { \
+		osdialog_restore_cb(cb_ptr); \
+	}
+
+
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
 	@autoreleasepool {
+		SAVE_CALLBACK
 
 		NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
 
@@ -46,14 +62,19 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 		NSInteger button = [alert runModal];
 
 		[keyWindow makeKeyAndOrderFront:nil];
+		bool success = (button == NSAlertFirstButtonReturn);
 
-		return (button == NSAlertFirstButtonReturn);
+		RESTORE_CALLBACK
+
+		return success;
 	} // @autoreleasepool
 }
 
 
 char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
 	@autoreleasepool {
+
+		SAVE_CALLBACK
 
 		NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
 
@@ -98,6 +119,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 		[keyWindow makeKeyAndOrderFront:nil];
 
+		RESTORE_CALLBACK
+
 		return result;
 	} // @autoreleasepool
 }
@@ -105,6 +128,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
 	@autoreleasepool {
+
+		SAVE_CALLBACK
 
 		NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
 
@@ -178,6 +203,8 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 		[keyWindow makeKeyAndOrderFront:nil];
 
+		RESTORE_CALLBACK
+
 		return result;
 	} // @autoreleasepool
 }
@@ -191,6 +218,8 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 
 	@autoreleasepool {
 
+		SAVE_CALLBACK
+
 		// TODO I have no idea what I'm doing here
 		NSColorPanel* panel = [NSColorPanel sharedColorPanel];
 		// [panel setDelegate:self];
@@ -202,6 +231,8 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 		// 	[panel setShowAlpha:NO];
 
 		// [panel makeKeyAndOrderFront:self];
+
+		RESTORE_CALLBACK
 
 		return 0;
 	} // @autoreleasepool

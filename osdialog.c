@@ -81,3 +81,15 @@ void osdialog_filters_free(osdialog_filters* filters) {
 	OSDIALOG_FREE(filters);
 	osdialog_filters_free(next);
 }
+
+
+osdialog_save_callback osdialog_save_cb = NULL;
+osdialog_restore_callback osdialog_restore_cb = NULL;
+
+void osdialog_set_save_callback(osdialog_save_callback cb) {
+	osdialog_save_cb = cb;
+}
+
+void osdialog_set_restore_callback(osdialog_restore_callback cb) {
+	osdialog_restore_cb = cb;
+}
