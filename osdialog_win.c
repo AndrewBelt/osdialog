@@ -379,7 +379,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	cc.rgbResult = c;
 	cc.Flags = CC_FULLOPEN | CC_ANYCOLOR | CC_RGBINIT;
 
-	bool success = ChooseColor(&cc);
+	BOOL success = ChooseColor(&cc);
 
 	RESTORE_CALLBACK
 
