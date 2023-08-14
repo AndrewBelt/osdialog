@@ -233,13 +233,19 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		char patternBuf[1024];
 		char* patternPtr = patternBuf;
 		const char* patternEnd = patternBuf + sizeof(patternBuf);
-		patternPtr += snprintf(patternPtr, patternEnd - patternPtr, "%s |", filter->name);
+		int len = snprintf(patternPtr, patternEnd - patternPtr, "%s |", filter->name);
+		if (len < 0)
+			continue;
+		patternPtr += len;
 
 		// Append pattern
 		for (osdialog_filter_patterns* pattern = filter->patterns; pattern; pattern = pattern->next) {
 			if (patternPtr >= patternEnd)
 				break;
-			patternPtr += snprintf(patternPtr, patternEnd - patternPtr, " *.%s", pattern->pattern);
+			int len = snprintf(patternPtr, patternEnd - patternPtr, " *.%s", pattern->pattern);
+			if (len < 0)
+				continue;
+			patternPtr += len;
 		}
 		args[argIndex++] = osdialog_strdup(patternBuf);
 	}
