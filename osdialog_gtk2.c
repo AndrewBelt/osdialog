@@ -189,10 +189,10 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 #ifdef OSDIALOG_GTK3
 		GdkRGBA c;
 		gtk_color_chooser_get_rgba(colorsel, &c);
-		color->r = c.red * 65535 + 0.5;
-		color->g = c.green * 65535 + 0.5;
-		color->b = c.blue * 65535 + 0.5;
-		color->a = c.alpha * 65535 + 0.5;
+		color->r = c.red * 255;
+		color->g = c.green * 255;
+		color->b = c.blue * 255;
+		color->a = c.alpha * 255;
 #else
 		GdkColor c;
 		gtk_color_selection_get_current_color(colorsel, &c);
