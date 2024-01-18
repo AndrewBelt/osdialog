@@ -211,29 +211,55 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 
 int osdialog_color_picker(osdialog_color* color, int opacity) {
-	(void) color;
-	(void) opacity;
-	// Not yet implemented
-	return 0;
+	if (!color)
+		return 0;
 
 	@autoreleasepool {
 
 		SAVE_CALLBACK
 
-		// TODO I have no idea what I'm doing here
+		NSWindow* keyWindow = [[NSApplication sharedApplication] keyWindow];
+
+		// Set default picker tab
+		// [NSColorPanel setPickerMode:NSColorPanelModeWheel];
+
+		// Get color panel instance
 		NSColorPanel* panel = [NSColorPanel sharedColorPanel];
-		// [panel setDelegate:self];
-		[panel isVisible];
 
-		// if (opacity)
-		// 	[panel setShowAlpha:YES];
-		// else
-		// 	[panel setShowAlpha:NO];
+		// Set color
+		NSColor* c = [NSColor colorWithCalibratedRed:color->r / 255.f green:color->g / 255.f blue:color->b / 255.f alpha:color->a / 255.f];
+		[panel setColor:c];
+		[panel setShowsAlpha:(bool) opacity];
 
-		// [panel makeKeyAndOrderFront:self];
+		// Run panel as a modal window
+		NSModalSession modal = [NSApp beginModalSessionForWindow:panel];
+
+		// Wait until user hides modal with X
+		for (;;) {
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+			if ([NSApp runModalSession:modal] != NSModalResponseContinue)
+				break;
+			if (![panel isVisible])
+				break;
+		}
+
+		[NSApp endModalSession:modal];
+
+		// Get color
+		c = [panel color];
+		NSColor* cRGB = [c colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+		CGFloat r, g, b, a;
+		[cRGB getRed:&r green:&g blue:&b alpha:&a];
+		color->r = r * 255.f;
+		color->g = g * 255.f;
+		color->b = b * 255.f;
+		color->a = a * 255.f;
+
+		[keyWindow makeKeyAndOrderFront:nil];
 
 		RESTORE_CALLBACK
 
-		return 0;
+		// Always accept user choice
+		return 1;
 	} // @autoreleasepool
 }
