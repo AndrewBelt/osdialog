@@ -216,9 +216,11 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		args[argIndex++] = osdialog_strdup("--filename");
 		char buf[4096];
 		if (dir) {
-			// If we don't add a slash, the open dialog will open in the parent directory.
-			// If a slash is already present, a second one will have no effect.
-			snprintf(buf, sizeof(buf), "%s/%s", dir, filename ? filename : "");
+			// Hack: If filename is not given, zenity will open in the parent dir. To avoid this, use a nonsense default filename.
+			if (filename && filename[0])
+				snprintf(buf, sizeof(buf), "%s/%s", dir, filename);
+			else
+				snprintf(buf, sizeof(buf), "%s/?", dir);
 		}
 		else {
 			snprintf(buf, sizeof(buf), "%s", filename);
