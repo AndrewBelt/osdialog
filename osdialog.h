@@ -46,8 +46,6 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 Returns the entered text, or NULL if the dialog was cancelled.
 If the returned result is not NULL, caller must free() it.
-
-TODO: Implement on Windows and GTK2.
 */
 char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text);
 
@@ -101,8 +99,6 @@ Returns 1 if "OK" was pressed.
 
 `color` should be set to the initial color before calling. It is only overwritten if the user selects "OK".
 `opacity` enables the opacity slider by setting to 1. Not supported on Windows.
-
-TODO Implement on Mac.
 */
 int osdialog_color_picker(osdialog_color* color, int opacity);
 
