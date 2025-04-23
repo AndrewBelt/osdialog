@@ -40,6 +40,9 @@ Returns 1 if the "OK" or "Yes" button was pressed.
 */
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message);
 
+typedef void (*osdialog_message_callback)(int result, void* user);
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, void* user, osdialog_message_callback cb);
+
 /** Launches an input prompt with an "OK" and "Cancel" button.
 
 `text` is the default string to fill the input box.
@@ -48,6 +51,9 @@ Returns the entered text, or NULL if the dialog was cancelled.
 If the returned result is not NULL, caller must free() it.
 */
 char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text);
+
+typedef void (*osdialog_prompt_callback)(char* result, void* user);
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, void* user, osdialog_prompt_callback cb);
 
 
 /** Linked list of patterns. */
@@ -89,6 +95,9 @@ If the return result is not NULL, caller must free() it.
 */
 char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters);
 
+typedef void (*osdialog_file_callback)(char* result, void* user);
+void osdialog_file_async(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters, void* user, osdialog_file_callback cb);
+
 
 typedef struct {
 	uint8_t r, g, b, a;
@@ -101,6 +110,9 @@ Returns 1 if "OK" was pressed.
 `opacity` enables the opacity slider by setting to 1. Not supported on Windows.
 */
 int osdialog_color_picker(osdialog_color* color, int opacity);
+
+typedef void (*osdialog_color_picker_callback)(int result, void* user);
+void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user, osdialog_color_picker_callback cb);
 
 
 typedef void* (*osdialog_save_callback)();
