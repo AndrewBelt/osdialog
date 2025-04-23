@@ -24,21 +24,15 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 	SAVE_CALLBACK
 
-	GtkMessageType messageType;
-	switch (level) {
-		default:
-		case OSDIALOG_INFO: messageType = GTK_MESSAGE_INFO; break;
-		case OSDIALOG_WARNING: messageType = GTK_MESSAGE_WARNING; break;
-		case OSDIALOG_ERROR: messageType = GTK_MESSAGE_ERROR; break;
-	}
+	GtkMessageType messageType =
+		(level == OSDIALOG_WARNING) ? GTK_MESSAGE_INFO :
+		(level == OSDIALOG_ERROR) ? GTK_MESSAGE_ERROR :
+		GTK_MESSAGE_INFO;
 
-	GtkButtonsType buttonsType;
-	switch (buttons) {
-		default:
-		case OSDIALOG_OK: buttonsType = GTK_BUTTONS_OK; break;
-		case OSDIALOG_OK_CANCEL: buttonsType = GTK_BUTTONS_OK_CANCEL; break;
-		case OSDIALOG_YES_NO: buttonsType = GTK_BUTTONS_YES_NO; break;
-	}
+	GtkButtonsType buttonsType =
+		(buttons == OSDIALOG_OK_CANCEL) ? GTK_BUTTONS_OK_CANCEL :
+		(buttons == OSDIALOG_YES_NO) ? GTK_BUTTONS_YES_NO :
+		GTK_BUTTONS_OK;
 
 	GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, buttonsType, "%s", message);
 
@@ -60,13 +54,10 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 	SAVE_CALLBACK
 
-	GtkMessageType messageType;
-	switch (level) {
-		default:
-		case OSDIALOG_INFO: messageType = GTK_MESSAGE_INFO; break;
-		case OSDIALOG_WARNING: messageType = GTK_MESSAGE_WARNING; break;
-		case OSDIALOG_ERROR: messageType = GTK_MESSAGE_ERROR; break;
-	}
+	GtkMessageType messageType =
+		(level == OSDIALOG_WARNING) ? GTK_MESSAGE_INFO :
+		(level == OSDIALOG_ERROR) ? GTK_MESSAGE_ERROR :
+		GTK_MESSAGE_INFO;
 
 	GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, GTK_BUTTONS_OK_CANCEL, "%s", message);
 
@@ -120,13 +111,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		gtkAction = GTK_FILE_CHOOSER_ACTION_SAVE;
 	}
 
-	GtkWidget* dialog = gtk_file_chooser_dialog_new(
-	                      title,
-	                      NULL,
-	                      gtkAction,
-	                      "_Cancel", GTK_RESPONSE_CANCEL,
-	                      acceptText, GTK_RESPONSE_ACCEPT,
-	                      NULL);
+	GtkWidget* dialog = gtk_file_chooser_dialog_new(title, NULL, gtkAction, "_Cancel", GTK_RESPONSE_CANCEL, acceptText, GTK_RESPONSE_ACCEPT, NULL);
 
 	for (; filters; filters = filters->next) {
 		GtkFileFilter* fileFilter = gtk_file_filter_new();
