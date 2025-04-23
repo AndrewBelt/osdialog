@@ -1,14 +1,19 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "osdialog.h"
 
 
 char* osdialog_strdup(const char* s) {
+	if (!s)
+		return NULL;
 	return osdialog_strndup(s, strlen(s));
 }
 
 char* osdialog_strndup(const char* s, size_t n) {
+	if (!s)
+		return NULL;
 	char* d = OSDIALOG_MALLOC(n + 1);
 	memcpy(d, s, n);
 	d[n] = '\0';
@@ -16,7 +21,12 @@ char* osdialog_strndup(const char* s, size_t n) {
 }
 
 osdialog_filters* osdialog_filters_parse(const char* str) {
+	if (!str)
+		return NULL;
+
 	osdialog_filters* filters_head = OSDIALOG_MALLOC(sizeof(osdialog_filters));
+	filters_head->name = NULL;
+	filters_head->patterns = NULL;
 	filters_head->next = NULL;
 
 	osdialog_filters* filters = filters_head;
@@ -24,39 +34,53 @@ osdialog_filters* osdialog_filters_parse(const char* str) {
 
 	const char* text = str;
 	while (1) {
-		switch (*str) {
-			case ':': {
+		char c = *str;
+		if (!patterns) {
+			// Scan filter name
+			if (c == ':') {
+				// End of filter name
 				filters->name = osdialog_strndup(text, str - text);
 				filters->patterns = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
 				patterns = filters->patterns;
+				patterns->pattern = NULL;
 				patterns->next = NULL;
 				text = str + 1;
-			} break;
-			case ',': {
-				assert(patterns);
+			}
+			else if (c == '\0') {
+				// Filter has no pattern, leave as NULL
+				filters = NULL;
+				break;
+			}
+		}
+		else {
+			// Scan pattern
+			if (c == ',') {
+				// Next pattern
 				patterns->pattern = osdialog_strndup(text, str - text);
 				patterns->next = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
 				patterns = patterns->next;
+				patterns->pattern = NULL;
 				patterns->next = NULL;
 				text = str + 1;
-			} break;
-			case ';': {
-				assert(patterns);
+			}
+			else if (c == ';') {
+				// End of patterns
 				patterns->pattern = osdialog_strndup(text, str - text);
+				patterns = NULL;
 				filters->next = OSDIALOG_MALLOC(sizeof(osdialog_filters));
 				filters = filters->next;
+				filters->name = NULL;
+				filters->patterns = NULL;
 				filters->next = NULL;
-				patterns = NULL;
 				text = str + 1;
-			} break;
-			case '\0': {
-				assert(patterns);
+			}
+			else if (c == '\0') {
+				// End of string
 				patterns->pattern = osdialog_strndup(text, str - text);
-			} break;
-			default: break;
+				patterns = NULL;
+				break;
+			}
 		}
-		if (!*str)
-			break;
 		str++;
 	}
 
