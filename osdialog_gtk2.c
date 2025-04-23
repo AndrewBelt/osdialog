@@ -7,22 +7,20 @@ extern osdialog_save_callback osdialog_save_cb;
 extern osdialog_restore_callback osdialog_restore_cb;
 
 #define SAVE_CALLBACK \
-	void* cb_ptr = NULL; \
+	void* context = NULL; \
 	if (osdialog_save_cb) { \
-		cb_ptr = osdialog_save_cb(); \
+		context = osdialog_save_cb(); \
 	}
 
 #define RESTORE_CALLBACK \
 	if (osdialog_restore_cb) { \
-		osdialog_restore_cb(cb_ptr); \
+		osdialog_restore_cb(context); \
 	}
 
 
-int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
+static GtkWidget* osdialog_message_create(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
 	if (!gtk_init_check(NULL, NULL))
-		return 0;
-
-	SAVE_CALLBACK
+		return NULL;
 
 	GtkMessageType messageType =
 		(level == OSDIALOG_WARNING) ? GTK_MESSAGE_INFO :
@@ -34,7 +32,18 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 		(buttons == OSDIALOG_YES_NO) ? GTK_BUTTONS_YES_NO :
 		GTK_BUTTONS_OK;
 
-	GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, buttonsType, "%s", message);
+	return gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, buttonsType, "%s", message);
+}
+
+
+int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
+	SAVE_CALLBACK
+
+	GtkWidget* dialog = osdialog_message_create(level, buttons, message);
+	if (!dialog) {
+		RESTORE_CALLBACK
+		return 0;
+	}
 
 	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -45,6 +54,46 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	RESTORE_CALLBACK
 
 	return (result == GTK_RESPONSE_OK || result == GTK_RESPONSE_YES);
+}
+
+
+typedef struct {
+	osdialog_message_callback cb;
+	void* user;
+	void* context;
+} osdialog_message_data;
+
+
+static void osdialog_message_response(GtkDialog* dialog, gint response, gpointer ptr) {
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	while (gtk_events_pending())
+		gtk_main_iteration();
+
+	osdialog_message_data* data = ptr;
+	void* context = data->context;
+	RESTORE_CALLBACK
+
+	int result = (response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES);
+	if (data->cb)
+		data->cb(result, data->user);
+
+	OSDIALOG_FREE(data);
+}
+
+
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, void* user, osdialog_message_callback cb) {
+	SAVE_CALLBACK
+
+	GtkWidget* dialog = osdialog_message_create(level, buttons, message);
+
+	osdialog_message_data* data = OSDIALOG_MALLOC(sizeof(osdialog_message_data));
+	data->cb = cb;
+	data->user = user;
+	data->context = context;
+
+	g_signal_connect(dialog, "response", G_CALLBACK(osdialog_message_response), data);
+	gtk_widget_show_all(dialog);
 }
 
 
