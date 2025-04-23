@@ -134,6 +134,15 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 }
 
 
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, void* user, osdialog_message_callback cb) {
+	// Fake async placeholder
+	int result = osdialog_message(level, buttons, message);
+	if (cb) {
+		cb(result, user);
+	}
+}
+
+
 char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
 	(void) level;
 	char* args[32];
@@ -161,6 +170,18 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 	if (outLen > 0)
 		outBuf[outLen - 1] = '\0';
 	return osdialog_strdup(outBuf);
+}
+
+
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, void* user, osdialog_prompt_callback cb) {
+	// Fake async placeholder
+	char* result = osdialog_prompt(level, message, text);
+	if (cb) {
+		cb(result, user);
+	}
+	else {
+		OSDIALOG_FREE(result);
+	}
 }
 
 
@@ -267,6 +288,18 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 }
 
 
+void osdialog_file_async(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters, void* user, osdialog_file_callback cb) {
+	// Fake async placeholder
+	char* result = osdialog_file(action, path, filename, filters);
+	if (cb) {
+		cb(result, user);
+	}
+	else {
+		OSDIALOG_FREE(result);
+	}
+}
+
+
 int osdialog_color_picker(osdialog_color* color, int opacity) {
 	char* args[32];
 	int argIndex = 0;
@@ -311,4 +344,13 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	}
 
 	return 1;
+}
+
+
+void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user, osdialog_color_picker_callback cb) {
+	// Fake async placeholder
+	int result = osdialog_color_picker(color, opacity);
+	if (cb) {
+		cb(result, user);
+	}
 }
