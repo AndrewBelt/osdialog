@@ -87,7 +87,7 @@ typedef enum {
 Returns the selected file, or NULL if the dialog was cancelled.
 If the return result is not NULL, caller must free() it.
 */
-char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, osdialog_filters* filters);
+char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters);
 
 
 typedef struct {

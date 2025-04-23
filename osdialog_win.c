@@ -253,7 +253,7 @@ static INT CALLBACK browseCallbackProc(HWND hWnd, UINT message, WPARAM wParam, L
 	return 0;
 }
 
-char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
 	SAVE_CALLBACK
 
 	if (action == OSDIALOG_OPEN_DIR) {
@@ -322,7 +322,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 			for (; filters; filters = filters->next) {
 				fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "%s", filters->name);
 				fBuf[fLen++] = '\0';
-				for (osdialog_filter_patterns* patterns = filters->patterns; patterns; patterns = patterns->next) {
+				for (const osdialog_filter_patterns* patterns = filters->patterns; patterns; patterns = patterns->next) {
 					fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, "*.%s", patterns->pattern);
 					if (patterns->next)
 						fLen += snprintf(fBuf + fLen, sizeof(fBuf) - fLen, ";");

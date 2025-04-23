@@ -186,7 +186,7 @@ static int supports_confirm_overwrite() {
 static int supports_confirm_overwrite_cached = -1;
 
 
-char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
 	char* args[32];
 	int argIndex = 0;
 
@@ -228,7 +228,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		args[argIndex++] = osdialog_strdup(buf);
 	}
 
-	for (osdialog_filters* filter = filters; filter; filter = filter->next) {
+	for (const osdialog_filters* filter = filters; filter; filter = filter->next) {
 		args[argIndex++] = osdialog_strdup("--file-filter");
 
 		// Set pattern name
@@ -241,7 +241,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		patternPtr += len;
 
 		// Append pattern
-		for (osdialog_filter_patterns* pattern = filter->patterns; pattern; pattern = pattern->next) {
+		for (const osdialog_filter_patterns* pattern = filter->patterns; pattern; pattern = pattern->next) {
 			if (patternPtr >= patternEnd)
 				break;
 			int len = snprintf(patternPtr, patternEnd - patternPtr, " *.%s", pattern->pattern);

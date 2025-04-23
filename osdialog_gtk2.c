@@ -86,7 +86,7 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 }
 
 
-char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, osdialog_filters* filters) {
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
 	if (!gtk_init_check(NULL, NULL))
 		return 0;
 
@@ -116,7 +116,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 	for (; filters; filters = filters->next) {
 		GtkFileFilter* fileFilter = gtk_file_filter_new();
 		gtk_file_filter_set_name(fileFilter, filters->name);
-		for (osdialog_filter_patterns* patterns = filters->patterns; patterns; patterns = patterns->next) {
+		for (const osdialog_filter_patterns* patterns = filters->patterns; patterns; patterns = patterns->next) {
 			char patternBuf[1024];
 			snprintf(patternBuf, sizeof(patternBuf), "*.%s", patterns->pattern);
 			gtk_file_filter_add_pattern(fileFilter, patternBuf);
