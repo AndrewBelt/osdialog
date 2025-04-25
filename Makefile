@@ -13,13 +13,13 @@ SOURCES += osdialog.c
 ifeq ($(ARCH),gtk2)
 	CFLAGS += $(shell pkg-config --cflags gtk+-2.0)
 	LDFLAGS += $(shell pkg-config --libs gtk+-2.0)
-	SOURCES += osdialog_gtk2.c
+	SOURCES += osdialog_gtk.c
 endif
 
 ifeq ($(ARCH),gtk3)
 	CFLAGS += $(shell pkg-config --cflags gtk+-3.0)
 	LDFLAGS += $(shell pkg-config --libs gtk+-3.0)
-	SOURCES += osdialog_gtk3.c
+	SOURCES += osdialog_gtk.c
 endif
 
 ifeq ($(ARCH),win)

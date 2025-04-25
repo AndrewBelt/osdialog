@@ -211,32 +211,48 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 
 	SAVE_CALLBACK
 
-#ifdef OSDIALOG_GTK3
+#if GTK_MAJOR_VERSION == 3
 	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);
 	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
 	gtk_color_chooser_set_use_alpha(colorsel, opacity);
-#else
+	GdkRGBA c;
+	// uint8_t to float
+	c.red = color->r / 255.0;
+	c.green = color->g / 255.0;
+	c.blue = color->b / 255.0;
+	c.alpha = color->a / 255.0;
+	gtk_color_chooser_set_rgba(colorsel, &c);
+#elif GTK_MAJOR_VERSION == 2
 	GtkWidget* dialog = gtk_color_selection_dialog_new("Color");
 	GtkColorSelection* colorsel = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(dialog)));
 	gtk_color_selection_set_has_opacity_control(colorsel, opacity);
+	GdkColor c;
+	// uint8_t to uint16_t
+	c.red = (uint16_t) color->r * 257;
+	c.green = (uint16_t) color->g * 257;
+	c.blue = (uint16_t) color->b * 257;
+	gtk_color_selection_set_current_color(colorsel, &c);
+	gtk_color_selection_set_current_alpha(colorsel, (uint16_t) color->a * 257);
 #endif
 
 	int result = 0;
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-#ifdef OSDIALOG_GTK3
+#if GTK_MAJOR_VERSION == 3
 		GdkRGBA c;
 		gtk_color_chooser_get_rgba(colorsel, &c);
-		color->r = c.red * 65535 + 0.5;
-		color->g = c.green * 65535 + 0.5;
-		color->b = c.blue * 65535 + 0.5;
-		color->a = c.alpha * 65535 + 0.5;
-#else
+		// float to uint8_t
+		color->r = c.red * 255.0;
+		color->g = c.green * 255.0;
+		color->b = c.blue * 255.0;
+		color->a = c.alpha * 255.0;
+#elif GTK_MAJOR_VERSION == 2
 		GdkColor c;
 		gtk_color_selection_get_current_color(colorsel, &c);
-		color->r = c.red >> 8;
-		color->g = c.green >> 8;
-		color->b = c.blue >> 8;
-		color->a = gtk_color_selection_get_current_alpha(colorsel) >> 8;
+		// uint16_t to uint8_t
+		color->r = c.red / 257;
+		color->g = c.green / 257;
+		color->b = c.blue / 257;
+		color->a = gtk_color_selection_get_current_alpha(colorsel) / 257;
 #endif
 
 		result = 1;
