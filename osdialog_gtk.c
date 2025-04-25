@@ -23,7 +23,7 @@ static GtkWidget* osdialog_message_create(osdialog_message_level level, osdialog
 		return NULL;
 
 	GtkMessageType messageType =
-		(level == OSDIALOG_WARNING) ? GTK_MESSAGE_INFO :
+		(level == OSDIALOG_WARNING) ? GTK_MESSAGE_WARNING :
 		(level == OSDIALOG_ERROR) ? GTK_MESSAGE_ERROR :
 		GTK_MESSAGE_INFO;
 
@@ -32,7 +32,13 @@ static GtkWidget* osdialog_message_create(osdialog_message_level level, osdialog
 		(buttons == OSDIALOG_YES_NO) ? GTK_BUTTONS_YES_NO :
 		GTK_BUTTONS_OK;
 
-	return gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, buttonsType, "%s", message);
+	GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, buttonsType, "%s", message);
+
+	// Uncomment to customize dialog
+	// gtk_window_set_title(GTK_WINDOW(dialog), "");
+	// gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "");
+
+	return dialog;
 }
 
 
@@ -45,7 +51,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 		return 0;
 	}
 
-	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 
 	while (gtk_events_pending())
@@ -53,7 +59,8 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 
 	RESTORE_CALLBACK
 
-	return (result == GTK_RESPONSE_OK || result == GTK_RESPONSE_YES);
+	int result = (response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES);
+	return result;
 }
 
 
@@ -65,12 +72,10 @@ typedef struct {
 
 
 static void osdialog_message_response(GtkDialog* dialog, gint response, gpointer ptr) {
+	osdialog_message_data* data = ptr;
+
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 
-	while (gtk_events_pending())
-		gtk_main_iteration();
-
-	osdialog_message_data* data = ptr;
 	void* context = data->context;
 	RESTORE_CALLBACK
 
@@ -86,6 +91,11 @@ void osdialog_message_async(osdialog_message_level level, osdialog_message_butto
 	SAVE_CALLBACK
 
 	GtkWidget* dialog = osdialog_message_create(level, buttons, message);
+	if (!dialog) {
+		RESTORE_CALLBACK
+		cb(0, user);
+		return;
+	}
 
 	osdialog_message_data* data = OSDIALOG_MALLOC(sizeof(osdialog_message_data));
 	data->cb = cb;
@@ -132,6 +142,15 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 	RESTORE_CALLBACK
 
 	return result;
+}
+
+
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, void* user, osdialog_prompt_callback cb) {
+	// TODO Replace this blocking placeholder with actual async
+	char* result = osdialog_prompt(level, message, text);
+
+	if (cb)
+		cb(result, user);
 }
 
 
@@ -203,6 +222,15 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 }
 
 
+void osdialog_file_async(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters, void* user, osdialog_file_callback cb) {
+	// TODO Replace this blocking placeholder with actual async
+	char* result = osdialog_file(action, path, filename, filters);
+
+	if (cb)
+		cb(result, user);
+}
+
+
 int osdialog_color_picker(osdialog_color* color, int opacity) {
 	if (!color)
 		return 0;
@@ -266,4 +294,13 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	RESTORE_CALLBACK
 
 	return result;
+}
+
+
+void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user, osdialog_color_picker_callback cb) {
+	// TODO Replace this blocking placeholder with actual async
+	int result = osdialog_color_picker(color, opacity);
+
+	if (cb)
+		cb(result, user);
 }
