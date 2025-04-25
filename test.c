@@ -187,7 +187,7 @@ int main(int argc, char* argv[]) {
 	// Async message
 	if (test < 0 || test == 10) {
 		fprintf(stderr, "async message\n");
-		sem_init(&semaphore, 0, 1);
+		sem_init(&semaphore, 0, 0);
 		osdialog_message_async(OSDIALOG_INFO, OSDIALOG_OK, "Info こんにちは", NULL, message_callback);
 		sem_wait(&semaphore);
 		sem_destroy(&semaphore);
@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
 	// Async prompt
 	if (test < 0 || test == 11) {
 		fprintf(stderr, "async prompt\n");
-		sem_init(&semaphore, 0, 1);
+		sem_init(&semaphore, 0, 0);
 		osdialog_prompt_async(OSDIALOG_INFO, "Info", "default text", NULL, prompt_callback);
 		sem_wait(&semaphore);
 		sem_destroy(&semaphore);
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
 	// Async file
 	if (test < 0 || test == 12) {
 		fprintf(stderr, "async file\n");
-		sem_init(&semaphore, 0, 1);
+		sem_init(&semaphore, 0, 0);
 		osdialog_file_async(OSDIALOG_OPEN, NULL, NULL, NULL, NULL, file_callback);
 		sem_wait(&semaphore);
 		sem_destroy(&semaphore);
@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
 	// Async color picker
 	if (test < 0 || test == 13) {
 		fprintf(stderr, "async color picker\n");
-		sem_init(&semaphore, 0, 1);
+		sem_init(&semaphore, 0, 0);
 		osdialog_color color = {255, 0, 255, 255};
 		osdialog_color_picker_async(&color, 0, NULL, color_picker_callback);
 		sem_wait(&semaphore);
