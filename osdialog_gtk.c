@@ -17,11 +17,18 @@ extern osdialog_restore_callback osdialog_restore_cb;
 		osdialog_restore_cb(context); \
 	}
 
+#if GTK_MAJOR_VERSION <= 3
+	#define GTK_INIT gtk_init_check(NULL, NULL)
+#else // GTK_MAJOR_VERSION == 4
+	#define GTK_INIT gtk_init_check()
+#endif
+
 
 static GtkWidget* osdialog_message_create(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
-	if (!gtk_init_check(NULL, NULL))
+	if (!GTK_INIT)
 		return NULL;
 
+#if GTK_MAJOR_VERSION <= 3
 	GtkMessageType messageType =
 		(level == OSDIALOG_WARNING) ? GTK_MESSAGE_WARNING :
 		(level == OSDIALOG_ERROR) ? GTK_MESSAGE_ERROR :
@@ -33,6 +40,11 @@ static GtkWidget* osdialog_message_create(osdialog_message_level level, osdialog
 		GTK_BUTTONS_OK;
 
 	GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, buttonsType, "%s", message);
+#else // GTK_MAJOR_VERSION == 4
+	GtkAlertDialog* alert = gtk_alert_dialog_new("%s", message);
+	GtkWidget* dialog = GTK_WIDGET(alert);
+	// TODO
+#endif
 
 	// Uncomment to customize dialog
 	// gtk_window_set_title(GTK_WINDOW(dialog), "");
@@ -51,12 +63,17 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 		return 0;
 	}
 
+#if GTK_MAJOR_VERSION <= 3
 	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
 	int result = (response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES);
 	gtk_widget_destroy(dialog);
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+	int result = 0;
+#endif
 
 	RESTORE_CALLBACK
 	return result;
@@ -70,6 +87,7 @@ typedef struct {
 } osdialog_message_data;
 
 
+#if GTK_MAJOR_VERSION <= 3
 static void osdialog_message_response(GtkDialog* dialog, gint response, gpointer ptr) {
 	osdialog_message_data* data = ptr;
 
@@ -84,6 +102,7 @@ static void osdialog_message_response(GtkDialog* dialog, gint response, gpointer
 
 	OSDIALOG_FREE(data);
 }
+#endif
 
 
 void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, void* user, osdialog_message_callback cb) {
@@ -102,15 +121,20 @@ void osdialog_message_async(osdialog_message_level level, osdialog_message_butto
 	data->user = user;
 	data->context = context;
 
+#if GTK_MAJOR_VERSION <= 3
 	g_signal_connect(dialog, "response", G_CALLBACK(osdialog_message_response), data);
 	gtk_widget_show_all(dialog);
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+#endif
 }
 
 
 static GtkWidget* osdialog_prompt_create(osdialog_message_level level, const char* message, const char* text) {
-	if (!gtk_init_check(NULL, NULL))
+	if (!GTK_INIT)
 		return NULL;
 
+#if GTK_MAJOR_VERSION <= 3
 	GtkMessageType messageType =
 		(level == OSDIALOG_WARNING) ? GTK_MESSAGE_INFO :
 		(level == OSDIALOG_ERROR) ? GTK_MESSAGE_ERROR :
@@ -126,6 +150,9 @@ static GtkWidget* osdialog_prompt_create(osdialog_message_level level, const cha
 	gtk_container_add(GTK_CONTAINER(content_area), entry);
 
 	gtk_widget_show_all(dialog);
+#else // GTK_MAJOR_VERSION == 4
+	GtkWidget* dialog = NULL;
+#endif
 
 	return dialog;
 }
@@ -140,6 +167,7 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 		return NULL;
 	}
 
+#if GTK_MAJOR_VERSION <= 3
 	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
 
 	GtkWidget* entry = GTK_WIDGET(g_object_get_data(G_OBJECT(dialog), "entry"));
@@ -152,6 +180,10 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+	char* result = NULL;
+#endif
 
 	RESTORE_CALLBACK
 	return result;
@@ -165,6 +197,7 @@ typedef struct {
 } osdialog_prompt_data;
 
 
+#if GTK_MAJOR_VERSION <= 3
 static void osdialog_prompt_response(GtkDialog* dialog, gint response, gpointer ptr) {
 	osdialog_prompt_data* data = ptr;
 
@@ -184,6 +217,7 @@ static void osdialog_prompt_response(GtkDialog* dialog, gint response, gpointer 
 
 	OSDIALOG_FREE(data);
 }
+#endif
 
 
 void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, void* user, osdialog_prompt_callback cb) {
@@ -202,15 +236,20 @@ void osdialog_prompt_async(osdialog_message_level level, const char* message, co
 	data->user = user;
 	data->context = context;
 
+#if GTK_MAJOR_VERSION <= 3
 	g_signal_connect(dialog, "response", G_CALLBACK(osdialog_prompt_response), data);
 	gtk_widget_show_all(dialog);
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+#endif
 }
 
 
 static GtkWidget* osdialog_file_create(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
-	if (!gtk_init_check(NULL, NULL))
+	if (!GTK_INIT)
 		return NULL;
 
+#if GTK_MAJOR_VERSION <= 3
 	GtkFileChooserAction gtkAction;
 	const char* title;
 	const char* acceptText;
@@ -251,6 +290,10 @@ static GtkWidget* osdialog_file_create(osdialog_file_action action, const char* 
 
 	if (action == OSDIALOG_SAVE && filename)
 		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), filename);
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+	GtkWidget* dialog = NULL;
+#endif
 
 	return dialog;
 }
@@ -265,6 +308,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		return NULL;
 	}
 
+#if GTK_MAJOR_VERSION <= 3
 	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
 
 	char* result = NULL;
@@ -278,6 +322,10 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+	char* result = NULL;
+#endif
 
 	RESTORE_CALLBACK
 	return result;
@@ -291,6 +339,7 @@ typedef struct {
 } osdialog_file_data;
 
 
+#if GTK_MAJOR_VERSION <= 3
 static void osdialog_file_response(GtkDialog* dialog, gint response, gpointer ptr) {
 	osdialog_file_data* data = ptr;
 
@@ -311,6 +360,7 @@ static void osdialog_file_response(GtkDialog* dialog, gint response, gpointer pt
 
 	OSDIALOG_FREE(data);
 }
+#endif
 
 
 void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, void* user, osdialog_file_callback cb) {
@@ -329,29 +379,22 @@ void osdialog_file_async(osdialog_file_action action, const char* dir, const cha
 	data->user = user;
 	data->context = context;
 
+#if GTK_MAJOR_VERSION <= 3
 	g_signal_connect(dialog, "response", G_CALLBACK(osdialog_file_response), data);
 	gtk_widget_show_all(dialog);
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+#endif
 }
 
 
 static GtkWidget* osdialog_color_picker_create(osdialog_color* color, int opacity) {
 	if (!color)
 		return NULL;
-	if (!gtk_init_check(NULL, NULL))
+	if (!GTK_INIT)
 		return NULL;
 
-#if GTK_MAJOR_VERSION == 3
-	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);
-	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
-	gtk_color_chooser_set_use_alpha(colorsel, opacity);
-	GdkRGBA c;
-	// uint8_t to float
-	c.red = color->r / 255.0;
-	c.green = color->g / 255.0;
-	c.blue = color->b / 255.0;
-	c.alpha = color->a / 255.0;
-	gtk_color_chooser_set_rgba(colorsel, &c);
-#elif GTK_MAJOR_VERSION == 2
+#if GTK_MAJOR_VERSION == 2
 	GtkWidget* dialog = gtk_color_selection_dialog_new("Color");
 	GtkColorSelection* colorsel = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(dialog)));
 	g_object_set_data(G_OBJECT(dialog), "colorsel", colorsel);
@@ -363,6 +406,20 @@ static GtkWidget* osdialog_color_picker_create(osdialog_color* color, int opacit
 	c.blue = (uint16_t) color->b * 257;
 	gtk_color_selection_set_current_color(colorsel, &c);
 	gtk_color_selection_set_current_alpha(colorsel, (uint16_t) color->a * 257);
+#elif GTK_MAJOR_VERSION == 3
+	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);
+	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
+	gtk_color_chooser_set_use_alpha(colorsel, opacity);
+	GdkRGBA c;
+	// uint8_t to float
+	c.red = color->r / 255.0;
+	c.green = color->g / 255.0;
+	c.blue = color->b / 255.0;
+	c.alpha = color->a / 255.0;
+	gtk_color_chooser_set_rgba(colorsel, &c);
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+	GtkWidget* dialog = NULL;
 #endif
 
 	return dialog;
@@ -373,16 +430,7 @@ static void osdialog_color_picker_get_color(GtkWidget* dialog, osdialog_color* c
 	if (!dialog || !color)
 		return;
 
-#if GTK_MAJOR_VERSION == 3
-	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
-	GdkRGBA c;
-	gtk_color_chooser_get_rgba(colorsel, &c);
-	// float to uint8_t
-	color->r = c.red * 255.0;
-	color->g = c.green * 255.0;
-	color->b = c.blue * 255.0;
-	color->a = c.alpha * 255.0;
-#elif GTK_MAJOR_VERSION == 2
+#if GTK_MAJOR_VERSION == 2
 	GtkColorSelection* colorsel = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(dialog)));
 	GdkColor c;
 	gtk_color_selection_get_current_color(colorsel, &c);
@@ -391,6 +439,17 @@ static void osdialog_color_picker_get_color(GtkWidget* dialog, osdialog_color* c
 	color->g = c.green / 257;
 	color->b = c.blue / 257;
 	color->a = gtk_color_selection_get_current_alpha(colorsel) / 257;
+#elif GTK_MAJOR_VERSION == 3
+	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
+	GdkRGBA c;
+	gtk_color_chooser_get_rgba(colorsel, &c);
+	// float to uint8_t
+	color->r = c.red * 255.0;
+	color->g = c.green * 255.0;
+	color->b = c.blue * 255.0;
+	color->a = c.alpha * 255.0;
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
 #endif
 }
 
@@ -404,6 +463,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 		return 0;
 	}
 
+#if GTK_MAJOR_VERSION <= 3
 	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
 
 	int result = (response == GTK_RESPONSE_OK);
@@ -415,6 +475,10 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+	int result = 0;
+#endif
 
 	RESTORE_CALLBACK
 	return result;
@@ -429,6 +493,7 @@ typedef struct {
 } osdialog_color_picker_data;
 
 
+#if GTK_MAJOR_VERSION <= 3
 static void osdialog_color_picker_response(GtkDialog* dialog, gint response, gpointer ptr) {
 	osdialog_color_picker_data* data = ptr;
 
@@ -447,6 +512,7 @@ static void osdialog_color_picker_response(GtkDialog* dialog, gint response, gpo
 
 	OSDIALOG_FREE(data);
 }
+#endif
 
 
 void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user, osdialog_color_picker_callback cb) {
@@ -466,6 +532,10 @@ void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user,
 	data->context = context;
 	data->color = color;
 
+#if GTK_MAJOR_VERSION <= 3
 	g_signal_connect(dialog, "response", G_CALLBACK(osdialog_color_picker_response), data);
 	gtk_widget_show_all(dialog);
+#else // GTK_MAJOR_VERSION == 4
+	// TODO
+#endif
 }

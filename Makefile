@@ -6,20 +6,26 @@ LDFLAGS += -lpthread
 SOURCES += test.c
 
 ifndef ARCH
-$(error ARCH is not defined. Run with `make ARCH=mac`, win, gtk2, gtk3, or zenity)
+$(error ARCH is not defined. Run with `make ARCH=mac`, win, gtk4, gtk3, gtk2, or zenity)
 endif
 
 SOURCES += osdialog.c
 
-ifeq ($(ARCH),gtk2)
-	CFLAGS += $(shell pkg-config --cflags gtk+-2.0)
-	LDFLAGS += $(shell pkg-config --libs gtk+-2.0)
+ifeq ($(ARCH),gtk4)
+	CFLAGS += $(shell pkg-config --cflags gtk4)
+	LDFLAGS += $(shell pkg-config --libs gtk4)
 	SOURCES += osdialog_gtk.c
 endif
 
 ifeq ($(ARCH),gtk3)
 	CFLAGS += $(shell pkg-config --cflags gtk+-3.0)
 	LDFLAGS += $(shell pkg-config --libs gtk+-3.0)
+	SOURCES += osdialog_gtk.c
+endif
+
+ifeq ($(ARCH),gtk2)
+	CFLAGS += $(shell pkg-config --cflags gtk+-2.0)
+	LDFLAGS += $(shell pkg-config --libs gtk+-2.0)
 	SOURCES += osdialog_gtk.c
 endif
 
