@@ -52,14 +52,13 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	}
 
 	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+	int result = (response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES);
 	gtk_widget_destroy(dialog);
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
 
 	RESTORE_CALLBACK
-
-	int result = (response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES);
 	return result;
 }
 
@@ -74,12 +73,12 @@ typedef struct {
 static void osdialog_message_response(GtkDialog* dialog, gint response, gpointer ptr) {
 	osdialog_message_data* data = ptr;
 
+	int result = (response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES);
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 
 	void* context = data->context;
 	RESTORE_CALLBACK
 
-	int result = (response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES);
 	if (data->cb)
 		data->cb(result, data->user);
 
@@ -93,7 +92,8 @@ void osdialog_message_async(osdialog_message_level level, osdialog_message_butto
 	GtkWidget* dialog = osdialog_message_create(level, buttons, message);
 	if (!dialog) {
 		RESTORE_CALLBACK
-		cb(0, user);
+		if (cb)
+			cb(0, user);
 		return;
 	}
 
@@ -107,11 +107,9 @@ void osdialog_message_async(osdialog_message_level level, osdialog_message_butto
 }
 
 
-char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
+static GtkWidget* osdialog_prompt_create(osdialog_message_level level, const char* message, const char* text) {
 	if (!gtk_init_check(NULL, NULL))
-		return 0;
-
-	SAVE_CALLBACK
+		return NULL;
 
 	GtkMessageType messageType =
 		(level == OSDIALOG_WARNING) ? GTK_MESSAGE_INFO :
@@ -122,43 +120,96 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 	GtkWidget* entry = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entry), text);
+	g_object_set_data(G_OBJECT(dialog), "entry", entry);
 
 	GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	gtk_container_add(GTK_CONTAINER(content_area), entry);
+
 	gtk_widget_show_all(dialog);
 
-	gint button = gtk_dialog_run(GTK_DIALOG(dialog));
-	const char* result_str = gtk_entry_get_text(GTK_ENTRY(entry));
+	return dialog;
+}
 
-	char* result = NULL;
-	if (button == GTK_RESPONSE_OK) {
-		result = osdialog_strndup(result_str, strlen(result_str));
+
+char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
+	SAVE_CALLBACK
+
+	GtkWidget* dialog = osdialog_prompt_create(level, message, text);
+	if (!dialog) {
+		RESTORE_CALLBACK
+		return NULL;
 	}
+
+	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+	GtkWidget* entry = GTK_WIDGET(g_object_get_data(G_OBJECT(dialog), "entry"));
+	char* result = NULL;
+	if (response == GTK_RESPONSE_OK) {
+		result = osdialog_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+	}
+
 	gtk_widget_destroy(dialog);
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
 
 	RESTORE_CALLBACK
-
 	return result;
 }
 
 
-void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, void* user, osdialog_prompt_callback cb) {
-	// TODO Replace this blocking placeholder with actual async
-	char* result = osdialog_prompt(level, message, text);
+typedef struct {
+	osdialog_prompt_callback cb;
+	void* user;
+	void* context;
+} osdialog_prompt_data;
 
-	if (cb)
-		cb(result, user);
+
+static void osdialog_prompt_response(GtkDialog* dialog, gint response, gpointer ptr) {
+	osdialog_prompt_data* data = ptr;
+
+	GtkWidget* entry = GTK_WIDGET(g_object_get_data(G_OBJECT(dialog), "entry"));
+	char* result = NULL;
+	if (response == GTK_RESPONSE_OK) {
+		result = osdialog_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+	}
+
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	void* context = data->context;
+	RESTORE_CALLBACK
+
+	if (data->cb)
+		data->cb(result, data->user);
+
+	OSDIALOG_FREE(data);
 }
 
 
-char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
-	if (!gtk_init_check(NULL, NULL))
-		return 0;
-
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, void* user, osdialog_prompt_callback cb) {
 	SAVE_CALLBACK
+
+	GtkWidget* dialog = osdialog_prompt_create(level, message, text);
+	if (!dialog) {
+		RESTORE_CALLBACK
+		if (cb)
+			cb(NULL, user);
+		return;
+	}
+
+	osdialog_prompt_data* data = OSDIALOG_MALLOC(sizeof(osdialog_prompt_data));
+	data->cb = cb;
+	data->user = user;
+	data->context = context;
+
+	g_signal_connect(dialog, "response", G_CALLBACK(osdialog_prompt_response), data);
+	gtk_widget_show_all(dialog);
+}
+
+
+static GtkWidget* osdialog_file_create(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
+	if (!gtk_init_check(NULL, NULL))
+		return NULL;
 
 	GtkFileChooserAction gtkAction;
 	const char* title;
@@ -201,43 +252,93 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 	if (action == OSDIALOG_SAVE && filename)
 		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), filename);
 
-	char* chosen_filename = NULL;
-	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-		chosen_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+	return dialog;
+}
+
+
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
+	SAVE_CALLBACK
+
+	GtkWidget* dialog = osdialog_file_create(action, dir, filename, filters);
+	if (!dialog) {
+		RESTORE_CALLBACK
+		return NULL;
 	}
-	gtk_widget_destroy(dialog);
+
+	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
 
 	char* result = NULL;
-	if (chosen_filename) {
-		result = osdialog_strndup(chosen_filename, strlen(chosen_filename));
+	if (response == GTK_RESPONSE_ACCEPT) {
+		gchar* chosen_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		result = osdialog_strdup(chosen_filename);
 		g_free(chosen_filename);
 	}
+
+	gtk_widget_destroy(dialog);
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
 
 	RESTORE_CALLBACK
-
 	return result;
 }
 
 
-void osdialog_file_async(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters, void* user, osdialog_file_callback cb) {
-	// TODO Replace this blocking placeholder with actual async
-	char* result = osdialog_file(action, path, filename, filters);
+typedef struct {
+	osdialog_file_callback cb;
+	void* user;
+	void* context;
+} osdialog_file_data;
 
-	if (cb)
-		cb(result, user);
+
+static void osdialog_file_response(GtkDialog* dialog, gint response, gpointer ptr) {
+	osdialog_file_data* data = ptr;
+
+	char* result = NULL;
+	if (response == GTK_RESPONSE_ACCEPT) {
+		gchar* chosen_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		result = osdialog_strdup(chosen_filename);
+		g_free(chosen_filename);
+	}
+
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	void* context = data->context;
+	RESTORE_CALLBACK
+
+	if (data->cb)
+		data->cb(result, data->user);
+
+	OSDIALOG_FREE(data);
 }
 
 
-int osdialog_color_picker(osdialog_color* color, int opacity) {
-	if (!color)
-		return 0;
-	if (!gtk_init_check(NULL, NULL))
-		return 0;
-
+void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, void* user, osdialog_file_callback cb) {
 	SAVE_CALLBACK
+
+	GtkWidget* dialog = osdialog_file_create(action, dir, filename, filters);
+	if (!dialog) {
+		RESTORE_CALLBACK
+		if (cb)
+			cb(NULL, user);
+		return;
+	}
+
+	osdialog_file_data* data = OSDIALOG_MALLOC(sizeof(osdialog_file_data));
+	data->cb = cb;
+	data->user = user;
+	data->context = context;
+
+	g_signal_connect(dialog, "response", G_CALLBACK(osdialog_file_response), data);
+	gtk_widget_show_all(dialog);
+}
+
+
+static GtkWidget* osdialog_color_picker_create(osdialog_color* color, int opacity) {
+	if (!color)
+		return NULL;
+	if (!gtk_init_check(NULL, NULL))
+		return NULL;
 
 #if GTK_MAJOR_VERSION == 3
 	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);
@@ -253,6 +354,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 #elif GTK_MAJOR_VERSION == 2
 	GtkWidget* dialog = gtk_color_selection_dialog_new("Color");
 	GtkColorSelection* colorsel = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(dialog)));
+	g_object_set_data(G_OBJECT(dialog), "colorsel", colorsel);
 	gtk_color_selection_set_has_opacity_control(colorsel, opacity);
 	GdkColor c;
 	// uint8_t to uint16_t
@@ -263,27 +365,50 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	gtk_color_selection_set_current_alpha(colorsel, (uint16_t) color->a * 257);
 #endif
 
-	int result = 0;
-	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-#if GTK_MAJOR_VERSION == 3
-		GdkRGBA c;
-		gtk_color_chooser_get_rgba(colorsel, &c);
-		// float to uint8_t
-		color->r = c.red * 255.0;
-		color->g = c.green * 255.0;
-		color->b = c.blue * 255.0;
-		color->a = c.alpha * 255.0;
-#elif GTK_MAJOR_VERSION == 2
-		GdkColor c;
-		gtk_color_selection_get_current_color(colorsel, &c);
-		// uint16_t to uint8_t
-		color->r = c.red / 257;
-		color->g = c.green / 257;
-		color->b = c.blue / 257;
-		color->a = gtk_color_selection_get_current_alpha(colorsel) / 257;
-#endif
+	return dialog;
+}
 
-		result = 1;
+
+static void osdialog_color_picker_get_color(GtkWidget* dialog, osdialog_color* color) {
+	if (!dialog || !color)
+		return;
+
+#if GTK_MAJOR_VERSION == 3
+	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
+	GdkRGBA c;
+	gtk_color_chooser_get_rgba(colorsel, &c);
+	// float to uint8_t
+	color->r = c.red * 255.0;
+	color->g = c.green * 255.0;
+	color->b = c.blue * 255.0;
+	color->a = c.alpha * 255.0;
+#elif GTK_MAJOR_VERSION == 2
+	GtkColorSelection* colorsel = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(dialog)));
+	GdkColor c;
+	gtk_color_selection_get_current_color(colorsel, &c);
+	// uint16_t to uint8_t
+	color->r = c.red / 257;
+	color->g = c.green / 257;
+	color->b = c.blue / 257;
+	color->a = gtk_color_selection_get_current_alpha(colorsel) / 257;
+#endif
+}
+
+
+int osdialog_color_picker(osdialog_color* color, int opacity) {
+	SAVE_CALLBACK
+
+	GtkWidget* dialog = osdialog_color_picker_create(color, opacity);
+	if (!dialog) {
+		RESTORE_CALLBACK
+		return 0;
+	}
+
+	gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+	int result = (response == GTK_RESPONSE_OK);
+	if (response == GTK_RESPONSE_OK) {
+		osdialog_color_picker_get_color(dialog, color);
 	}
 
 	gtk_widget_destroy(dialog);
@@ -292,15 +417,55 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 		gtk_main_iteration();
 
 	RESTORE_CALLBACK
-
 	return result;
 }
 
 
-void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user, osdialog_color_picker_callback cb) {
-	// TODO Replace this blocking placeholder with actual async
-	int result = osdialog_color_picker(color, opacity);
+typedef struct {
+	osdialog_color_picker_callback cb;
+	void* user;
+	void* context;
+	osdialog_color* color;
+} osdialog_color_picker_data;
 
-	if (cb)
-		cb(result, user);
+
+static void osdialog_color_picker_response(GtkDialog* dialog, gint response, gpointer ptr) {
+	osdialog_color_picker_data* data = ptr;
+
+	int result = (response == GTK_RESPONSE_OK);
+	if (response == GTK_RESPONSE_OK) {
+		osdialog_color_picker_get_color(GTK_WIDGET(dialog), data->color);
+	}
+
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	void* context = data->context;
+	RESTORE_CALLBACK
+
+	if (data->cb)
+		data->cb(result, data->user);
+
+	OSDIALOG_FREE(data);
+}
+
+
+void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user, osdialog_color_picker_callback cb) {
+	SAVE_CALLBACK
+
+	GtkWidget* dialog = osdialog_color_picker_create(color, opacity);
+	if (!dialog) {
+		RESTORE_CALLBACK
+		if (cb)
+			cb(0, user);
+		return;
+	}
+
+	osdialog_color_picker_data* data = OSDIALOG_MALLOC(sizeof(osdialog_color_picker_data));
+	data->cb = cb;
+	data->user = user;
+	data->context = context;
+	data->color = color;
+
+	g_signal_connect(dialog, "response", G_CALLBACK(osdialog_color_picker_response), data);
+	gtk_widget_show_all(dialog);
 }

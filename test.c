@@ -8,24 +8,24 @@ static sem_t semaphore;
 
 
 static void message_callback(int res, void* user) {
-	fprintf(stderr, "\t%d %p\n", res, user);
+	fprintf(stderr, "\tcallback: %d %p\n", res, user);
 	sem_post(&semaphore);
 }
 
 static void prompt_callback(char* res, void* user) {
-	fprintf(stderr, "\t%s %p\n", res, user);
+	fprintf(stderr, "\tcallback: %s %p\n", res, user);
 	OSDIALOG_FREE(res);
 	sem_post(&semaphore);
 }
 
 static void file_callback(char* res, void* user) {
-	fprintf(stderr, "\t%s %p\n", res, user);
+	fprintf(stderr, "\tcallback: %s %p\n", res, user);
 	OSDIALOG_FREE(res);
 	sem_post(&semaphore);
 }
 
 static void color_picker_callback(int res, void* user) {
-	fprintf(stderr, "\t%d %p\n", res, user);
+	fprintf(stderr, "\tcallback: %d %p\n", res, user);
 	sem_post(&semaphore);
 }
 
@@ -176,12 +176,11 @@ int main(int argc, char* argv[]) {
 		osdialog_color color = {255, 0, 255, 255};
 		fprintf(stderr, "color picker\n");
 		res = osdialog_color_picker(&color, 0);
-		fprintf(stderr, "\t%d\n", res);
-		fprintf(stderr, "\t#%02x%02x%02x%02x\n", color.r, color.g, color.b, color.a);
+		fprintf(stderr, "\t%d #%02x%02x%02x%02x\n", res, color.r, color.g, color.b, color.a);
+
 		fprintf(stderr, "color picker with opacity\n");
 		res = osdialog_color_picker(&color, 1);
-		fprintf(stderr, "\t%d\n", res);
-		fprintf(stderr, "\t#%02x%02x%02x%02x\n", color.r, color.g, color.b, color.a);
+		fprintf(stderr, "\t%d #%02x%02x%02x%02x\n", res, color.r, color.g, color.b, color.a);
 	}
 
 	// Async message
@@ -216,9 +215,10 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "async color picker\n");
 		sem_init(&semaphore, 0, 0);
 		osdialog_color color = {255, 0, 255, 255};
-		osdialog_color_picker_async(&color, 0, NULL, color_picker_callback);
+		osdialog_color_picker_async(&color, 1, NULL, color_picker_callback);
 		sem_wait(&semaphore);
 		sem_destroy(&semaphore);
+		fprintf(stderr, "\t#%02x%02x%02x%02x\n", color.r, color.g, color.b, color.a);
 	}
 
 	fprintf(stderr, "done\n");
