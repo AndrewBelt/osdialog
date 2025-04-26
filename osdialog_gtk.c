@@ -135,7 +135,7 @@ static void message_response(GtkDialog* dialog, gint response, gpointer ptr) {
 #endif
 
 
-void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, void* user, osdialog_message_callback cb) {
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback cb, void* user) {
 	SAVE_CALLBACK
 
 #if GTK_MAJOR_VERSION <= 3
@@ -254,7 +254,7 @@ static void prompt_response(GtkDialog* dialog, gint response, gpointer ptr) {
 #endif
 
 
-void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, void* user, osdialog_prompt_callback cb) {
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback cb, void* user) {
 	SAVE_CALLBACK
 
 	GtkWidget* dialog = prompt_create(level, message, text);
@@ -397,7 +397,7 @@ static void file_response(GtkDialog* dialog, gint response, gpointer ptr) {
 #endif
 
 
-void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, void* user, osdialog_file_callback cb) {
+void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, osdialog_file_callback cb, void* user) {
 	SAVE_CALLBACK
 
 	GtkWidget* dialog = file_create(action, dir, filename, filters);
@@ -549,7 +549,7 @@ static void color_picker_response(GtkDialog* dialog, gint response, gpointer ptr
 #endif
 
 
-void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user, osdialog_color_picker_callback cb) {
+void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_color_picker_callback cb, void* user) {
 	SAVE_CALLBACK
 
 	GtkWidget* dialog = color_picker_create(color, opacity);

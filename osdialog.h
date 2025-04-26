@@ -41,7 +41,13 @@ Returns 1 if the "OK" or "Yes" button was pressed.
 int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message);
 
 typedef void (*osdialog_message_callback)(int result, void* user);
-void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, void* user, osdialog_message_callback cb);
+
+/** Launches a message box asynchronously.
+
+Calls cb(result, user) when dialog is finished.
+`message` can be freed before the callback is called.
+*/
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback cb, void* user);
 
 /** Launches an input prompt with an "OK" and "Cancel" button.
 
@@ -53,7 +59,13 @@ If the returned result is not NULL, caller must free() it.
 char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text);
 
 typedef void (*osdialog_prompt_callback)(char* result, void* user);
-void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, void* user, osdialog_prompt_callback cb);
+
+/** Launches an input prompt asynchronously.
+
+Calls cb(result, user) when dialog is finished.
+`message` and `text` can be freed before the callback is called.
+*/
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback cb, void* user);
 
 
 /** Linked list of patterns. */
@@ -86,17 +98,18 @@ typedef enum {
 
 /** Launches a file dialog and returns the selected path or NULL if nothing was selected.
 
-`path` is the default folder the file dialog will attempt to open in, or NULL for the OS's default.
+`dir` is the default folder the file dialog will attempt to open in, or NULL for the OS's default.
 `filename` is the default text that will appear in the filename input, or NULL for the OS's default. Relevant to save dialog only.
 `filters` is a list of patterns to filter the file selection, or NULL.
 
 Returns the selected file, or NULL if the dialog was cancelled.
 If the return result is not NULL, caller must free() it.
 */
-char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters);
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters);
 
 typedef void (*osdialog_file_callback)(char* result, void* user);
-void osdialog_file_async(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters, void* user, osdialog_file_callback cb);
+
+void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, osdialog_file_callback cb, void* user);
 
 
 typedef struct {
@@ -112,7 +125,8 @@ Returns 1 if "OK" was pressed.
 int osdialog_color_picker(osdialog_color* color, int opacity);
 
 typedef void (*osdialog_color_picker_callback)(int result, void* user);
-void osdialog_color_picker_async(osdialog_color* color, int opacity, void* user, osdialog_color_picker_callback cb);
+
+void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_color_picker_callback cb, void* user);
 
 
 typedef void* (*osdialog_save_callback)();
