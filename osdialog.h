@@ -109,6 +109,11 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 typedef void (*osdialog_file_callback)(char* result, void* user);
 
+/** Launches a file dialog asynchronously.
+
+Calls cb(result, user) when dialog is finished.
+`dir`, `filename` and `filters` can be freed before the callback is called.
+*/
 void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, osdialog_file_callback cb, void* user);
 
 

@@ -44,7 +44,7 @@ static wchar_t* utf8_to_wchar(const char* s) {
 }
 
 
-int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
+static int osdialog_message_impl(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, HWND window) {
 	SAVE_CALLBACK
 
 	UINT type = MB_APPLMODAL;
@@ -62,7 +62,6 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 		case OSDIALOG_YES_NO: type |= MB_YESNO; break;
 	}
 
-	HWND window = GetActiveWindow();
 	wchar_t* messageW = utf8_to_wchar(message);
 	int result = MessageBoxW(window, messageW, L"", type);
 	OSDIALOG_FREE(messageW);
@@ -75,6 +74,52 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 			return 1;
 		default:
 			return 0;
+	}
+}
+
+
+int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message) {
+	return osdialog_message_impl(level, buttons, message, GetActiveWindow());
+}
+
+
+typedef struct {
+	osdialog_message_level level;
+	osdialog_message_buttons buttons;
+	const char* message;
+	osdialog_message_callback cb;
+	void* user;
+	HWND window;
+} osdialog_message_data;
+
+
+static DWORD WINAPI osdialog_message_async_thread_proc(void* ptr) {
+	osdialog_message_data* data = (osdialog_message_data*)ptr;
+	const int result = osdialog_message_impl(data->level, data->buttons, data->message, data->window);
+	if (data->cb)
+		data->cb(result, data->user);
+
+	OSDIALOG_FREE(data->message);
+	OSDIALOG_FREE(data);
+	return 0;
+}
+
+
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback cb, void* user) {
+	osdialog_message_data* data = OSDIALOG_MALLOC(sizeof(osdialog_message_data));
+	data->level = level;
+	data->buttons = buttons;
+	data->message = osdialog_strdup(message);
+	data->cb = cb;
+	data->user = user;
+	data->window = GetActiveWindow();
+
+	HANDLE thread = CreateThread(NULL, 0, osdialog_message_async_thread_proc, data, 0, NULL);
+	if (!thread) {
+		OSDIALOG_FREE(data->message);
+		OSDIALOG_FREE(data);
+		if (cb)
+			cb(0, user);
 	}
 }
 
@@ -221,7 +266,8 @@ static INT_PTR CALLBACK promptProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
+
+char* osdialog_prompt_impl(osdialog_message_level level, const char* message, const char* text, HWND window) {
 	(void) level;
 	(void) message;
 
@@ -232,7 +278,6 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 		MultiByteToWideChar(CP_UTF8, 0, text, -1, promptBuffer, LENGTHOF(promptBuffer));
 	}
 
-	HWND window = GetActiveWindow();
 	int res = DialogBoxIndirectParamW(NULL, (LPCDLGTEMPLATEW) &promptTemplate, window, promptProc, (LPARAM) NULL);
 
 	RESTORE_CALLBACK
@@ -241,6 +286,54 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 		return wchar_to_utf8(promptBuffer);
 	}
 	return NULL;
+}
+
+
+char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text) {
+	return osdialog_prompt_impl(level, message, text, GetActiveWindow());
+}
+
+
+typedef struct {
+	osdialog_message_level level;
+	const char* message;
+	const char* text;
+	osdialog_prompt_callback cb;
+	void* user;
+	HWND window;
+} osdialog_prompt_data;
+
+
+static DWORD WINAPI osdialog_prompt_async_thread_proc(void* ptr) {
+	osdialog_prompt_data* data = (osdialog_prompt_data*)ptr;
+	const char* result = osdialog_prompt_impl(data->level, data->message, data->text, data->window);
+	if (data->cb)
+		data->cb(result, data->user);
+
+	OSDIALOG_FREE(data->message);
+	OSDIALOG_FREE(data->text);
+	OSDIALOG_FREE(data);
+	return 0;
+}
+
+
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback cb, void* user) {
+	osdialog_prompt_data* data = OSDIALOG_MALLOC(sizeof(osdialog_prompt_data));
+	data->level = level;
+	data->message = osdialog_strdup(message);
+	data->text = osdialog_strdup(text);
+	data->cb = cb;
+	data->user = user;
+	data->window = GetActiveWindow();
+
+	HANDLE thread = CreateThread(NULL, 0, osdialog_prompt_async_thread_proc, data, 0, NULL);
+	if (!thread) {
+		OSDIALOG_FREE(data->message);
+		OSDIALOG_FREE(data->text);
+		OSDIALOG_FREE(data);
+		if (cb)
+			cb(NULL, user);
+	}
 }
 
 
@@ -253,14 +346,14 @@ static INT CALLBACK browseCallbackProc(HWND hWnd, UINT message, WPARAM wParam, L
 	return 0;
 }
 
-char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
+static char* osdialog_file_impl(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, HWND window) {
 	SAVE_CALLBACK
 
 	if (action == OSDIALOG_OPEN_DIR) {
 		// open directory dialog
 		BROWSEINFOW bInfo;
 		ZeroMemory(&bInfo, sizeof(bInfo));
-		bInfo.hwndOwner = GetActiveWindow();
+		bInfo.hwndOwner = window;
 		bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
 
 		// dir
@@ -290,7 +383,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 		OPENFILENAMEW ofn;
 		ZeroMemory(&ofn, sizeof(ofn));
 		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = GetActiveWindow();
+		ofn.hwndOwner = window;
 		ofn.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 		// filename
@@ -361,6 +454,81 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 }
 
 
+char* osdialog_file(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters) {
+	return osdialog_file_impl(action, dir, filename, filters, GetActiveWindow());
+}
+
+
+osdialog_filter_patterns* osdialog_filter_patterns_copy(const osdialog_filter_patterns* src) {
+	if (!src)
+		return NULL;
+
+	osdialog_filter_patterns* dest = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
+	dest->pattern = osdialog_strdup(src->pattern);
+	dest->next = osdialog_filter_patterns_copy(src->next);
+	return dest;
+}
+
+
+osdialog_filters* osdialog_filters_copy(const osdialog_filters* src) {
+	if (!src)
+		return NULL;
+
+	osdialog_filters* dest = OSDIALOG_MALLOC(sizeof(osdialog_filters));
+	dest->name = osdialog_strdup(src->name);
+	dest->patterns = osdialog_filter_patterns_copy(src->patterns);
+	dest->next = osdialog_filters_copy(src->next);
+	return dest;
+}
+
+
+typedef struct {
+	osdialog_file_action action;
+	const char* dir;
+	const char* filename;
+	const osdialog_filters* filters;
+	osdialog_file_callback cb;
+	void* user;
+	HWND window;
+} osdialog_file_data;
+
+
+static DWORD WINAPI osdialog_file_async_thread_proc(void* ptr) {
+	osdialog_file_data* data = (osdialog_file_data*)ptr;
+	const char* result = osdialog_file_impl(data->action, data->dir, data->filename, data->filters, data->window);
+	if (data->cb)
+		data->cb(result, data->user);
+
+	OSDIALOG_FREE(data->dir);
+	OSDIALOG_FREE(data->filename);
+	osdialog_filters_free(data->filters);
+	OSDIALOG_FREE(data);
+	return 0;
+}
+
+
+void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, osdialog_file_callback cb, void* user) {
+	osdialog_file_data* data = OSDIALOG_MALLOC(sizeof(osdialog_file_data));
+	data->action = action;
+	data->dir = osdialog_strdup(dir);
+	data->filename = osdialog_strdup(filename);
+	data->filters = osdialog_filters_copy(filters);
+	data->cb = cb;
+	data->user = user;
+	data->window = GetActiveWindow();
+
+	HANDLE thread = CreateThread(NULL, 0, osdialog_file_async_thread_proc, data, 0, NULL);
+	if (!thread) {
+		OSDIALOG_FREE(data->dir);
+		OSDIALOG_FREE(data->filename);
+		osdialog_filters_free(data->filters);
+		OSDIALOG_FREE(data);
+		if (cb)
+			cb(NULL, user);
+	}
+}
+
+
 int osdialog_color_picker(osdialog_color* color, int opacity) {
 	(void) opacity;
 	SAVE_CALLBACK
@@ -392,4 +560,39 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	}
 
 	return 0;
+}
+
+
+typedef struct {
+	osdialog_color* color;
+	int opacity;
+	osdialog_color_picker_callback cb;
+	void* user;
+} osdialog_color_picker_data;
+
+
+static DWORD WINAPI osdialog_color_picker_async_thread_proc(void* ptr) {
+	osdialog_color_picker_data* data = (osdialog_color_picker_data*)ptr;
+	const int result = osdialog_color_picker(data->color, data->opacity);
+	if (data->cb)
+		data->cb(result, data->user);
+
+	OSDIALOG_FREE(data);
+	return 0;
+}
+
+
+void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_color_picker_callback cb, void* user) {
+	osdialog_color_picker_data* data = OSDIALOG_MALLOC(sizeof(osdialog_color_picker_data));
+	data->color = color;
+	data->opacity = opacity;
+	data->cb = cb;
+	data->user = user;
+
+	HANDLE thread = CreateThread(NULL, 0, osdialog_color_picker_async_thread_proc, data, 0, NULL);
+	if (!thread) {
+		OSDIALOG_FREE(data);
+		if (cb)
+			cb(0, user);
+	}
 }
