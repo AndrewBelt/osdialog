@@ -134,15 +134,15 @@ osdialog_filters* osdialog_filters_copy(const osdialog_filters* src) {
 }
 
 
-osdialog_save_callback osdialog_save_cb = NULL;
-osdialog_restore_callback osdialog_restore_cb = NULL;
+osdialog_save_callback* osdialog_save_cb = NULL;
+osdialog_restore_callback* osdialog_restore_cb = NULL;
 
 
-void osdialog_set_save_callback(osdialog_save_callback cb) {
+void osdialog_set_save_callback(osdialog_save_callback* cb) {
 	osdialog_save_cb = cb;
 }
 
 
-void osdialog_set_restore_callback(osdialog_restore_callback cb) {
+void osdialog_set_restore_callback(osdialog_restore_callback* cb) {
 	osdialog_restore_cb = cb;
 }

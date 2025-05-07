@@ -6,8 +6,8 @@
 #include "osdialog.h"
 
 
-extern osdialog_save_callback osdialog_save_cb;
-extern osdialog_restore_callback osdialog_restore_cb;
+extern osdialog_save_callback* osdialog_save_cb;
+extern osdialog_restore_callback* osdialog_restore_cb;
 
 #define SAVE_CALLBACK \
 	void* cb_ptr = NULL; \
@@ -87,7 +87,7 @@ typedef struct {
 	osdialog_message_level level;
 	osdialog_message_buttons buttons;
 	char* message;
-	osdialog_message_callback cb;
+	osdialog_message_callback* cb;
 	void* user;
 	HWND window;
 } osdialog_message_data;
@@ -105,7 +105,7 @@ static DWORD WINAPI osdialog_message_async_thread_proc(void* ptr) {
 }
 
 
-void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback cb, void* user) {
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback* cb, void* user) {
 	osdialog_message_data* data = OSDIALOG_MALLOC(sizeof(osdialog_message_data));
 	data->level = level;
 	data->buttons = buttons;
@@ -298,7 +298,7 @@ typedef struct {
 	osdialog_message_level level;
 	char* message;
 	char* text;
-	osdialog_prompt_callback cb;
+	osdialog_prompt_callback* cb;
 	void* user;
 	HWND window;
 } osdialog_prompt_data;
@@ -317,7 +317,7 @@ static DWORD WINAPI osdialog_prompt_async_thread_proc(void* ptr) {
 }
 
 
-void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback cb, void* user) {
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback* cb, void* user) {
 	osdialog_prompt_data* data = OSDIALOG_MALLOC(sizeof(osdialog_prompt_data));
 	data->level = level;
 	data->message = osdialog_strdup(message);
@@ -464,7 +464,7 @@ typedef struct {
 	char* dir;
 	char* filename;
 	osdialog_filters* filters;
-	osdialog_file_callback cb;
+	osdialog_file_callback* cb;
 	void* user;
 	HWND window;
 } osdialog_file_data;
@@ -484,7 +484,7 @@ static DWORD WINAPI osdialog_file_async_thread_proc(void* ptr) {
 }
 
 
-void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, osdialog_file_callback cb, void* user) {
+void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, osdialog_file_callback* cb, void* user) {
 	osdialog_file_data* data = OSDIALOG_MALLOC(sizeof(osdialog_file_data));
 	data->action = action;
 	data->dir = osdialog_strdup(dir);
@@ -549,7 +549,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 typedef struct {
 	osdialog_color color;
 	int opacity;
-	osdialog_color_picker_callback cb;
+	osdialog_color_picker_callback* cb;
 	void* user;
 	HWND window;
 } osdialog_color_picker_data;
@@ -566,7 +566,7 @@ static DWORD WINAPI osdialog_color_picker_async_thread_proc(void* ptr) {
 }
 
 
-void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback cb, void* user) {
+void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback* cb, void* user) {
 	osdialog_color_picker_data* data = OSDIALOG_MALLOC(sizeof(osdialog_color_picker_data));
 	data->color = color;
 	data->opacity = opacity;

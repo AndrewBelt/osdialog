@@ -134,7 +134,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 }
 
 
-void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback cb, void* user) {
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback* cb, void* user) {
 	// Fake async placeholder
 	int result = osdialog_message(level, buttons, message);
 	if (cb) {
@@ -173,7 +173,7 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 }
 
 
-void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback cb, void* user) {
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback* cb, void* user) {
 	// Fake async placeholder
 	char* result = osdialog_prompt(level, message, text);
 	if (cb) {
@@ -288,7 +288,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 }
 
 
-void osdialog_file_async(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters, osdialog_file_callback cb, void* user) {
+void osdialog_file_async(osdialog_file_action action, const char* path, const char* filename, const osdialog_filters* filters, osdialog_file_callback* cb, void* user) {
 	// Fake async placeholder
 	char* result = osdialog_file(action, path, filename, filters);
 	if (cb) {
@@ -347,7 +347,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 }
 
 
-void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback cb, void* user) {
+void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback* cb, void* user) {
 	// Fake async placeholder
 	int result = osdialog_color_picker(&color, opacity);
 	if (cb) {

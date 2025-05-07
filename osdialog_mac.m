@@ -3,8 +3,8 @@
 #include "osdialog.h"
 
 
-extern osdialog_save_callback osdialog_save_cb;
-extern osdialog_restore_callback osdialog_restore_cb;
+extern osdialog_save_callback* osdialog_save_cb;
+extern osdialog_restore_callback* osdialog_restore_cb;
 
 #define SAVE_CALLBACK \
 	void* context = NULL; \
@@ -86,7 +86,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 }
 
 
-void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback cb, void* user) {
+void osdialog_message_async(osdialog_message_level level, osdialog_message_buttons buttons, const char* message, osdialog_message_callback* cb, void* user) {
 	SAVE_CALLBACK
 
 	NSAlert* alert = message_create(level, buttons, message);
@@ -177,7 +177,7 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 }
 
 
-void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback cb, void* user) {
+void osdialog_prompt_async(osdialog_message_level level, const char* message, const char* text, osdialog_prompt_callback* cb, void* user) {
 	SAVE_CALLBACK
 
 	NSAlert* alert = prompt_create(level, message, text);
@@ -291,7 +291,7 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 }
 
 
-void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, osdialog_file_callback cb, void* user) {
+void osdialog_file_async(osdialog_file_action action, const char* dir, const char* filename, const osdialog_filters* filters, osdialog_file_callback* cb, void* user) {
 	SAVE_CALLBACK
 
 	NSSavePanel* panel = file_create(action, dir, filename, filters);
@@ -382,7 +382,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 }
 
 
-void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback cb, void* user) {
+void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback* cb, void* user) {
 	// Fake async placeholder
 	int result = osdialog_color_picker(&color, opacity);
 	if (cb) {
