@@ -459,29 +459,6 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 }
 
 
-osdialog_filter_patterns* osdialog_filter_patterns_copy(const osdialog_filter_patterns* src) {
-	if (!src)
-		return NULL;
-
-	osdialog_filter_patterns* dest = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
-	dest->pattern = osdialog_strdup(src->pattern);
-	dest->next = osdialog_filter_patterns_copy(src->next);
-	return dest;
-}
-
-
-osdialog_filters* osdialog_filters_copy(const osdialog_filters* src) {
-	if (!src)
-		return NULL;
-
-	osdialog_filters* dest = OSDIALOG_MALLOC(sizeof(osdialog_filters));
-	dest->name = osdialog_strdup(src->name);
-	dest->patterns = osdialog_filter_patterns_copy(src->patterns);
-	dest->next = osdialog_filters_copy(src->next);
-	return dest;
-}
-
-
 typedef struct {
 	osdialog_file_action action;
 	const char* dir;

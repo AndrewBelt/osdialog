@@ -88,7 +88,7 @@ Caller must eventually free with osdialog_filters_free().
 osdialog_filters* osdialog_filters_parse(const char* str);
 void osdialog_filter_patterns_free(osdialog_filter_patterns* patterns);
 void osdialog_filters_free(osdialog_filters* filters);
-
+osdialog_filters* osdialog_filters_copy(const osdialog_filters* src);
 
 typedef enum {
 	OSDIALOG_OPEN,

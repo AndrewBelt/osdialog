@@ -11,6 +11,7 @@ char* osdialog_strdup(const char* s) {
 	return osdialog_strndup(s, strlen(s));
 }
 
+
 char* osdialog_strndup(const char* s, size_t n) {
 	if (!s)
 		return NULL;
@@ -19,6 +20,7 @@ char* osdialog_strndup(const char* s, size_t n) {
 	d[n] = '\0';
 	return d;
 }
+
 
 osdialog_filters* osdialog_filters_parse(const char* str) {
 	if (!str)
@@ -87,6 +89,7 @@ osdialog_filters* osdialog_filters_parse(const char* str) {
 	return filters_head;
 }
 
+
 void osdialog_filter_patterns_free(osdialog_filter_patterns* patterns) {
 	if (!patterns)
 		return;
@@ -95,6 +98,7 @@ void osdialog_filter_patterns_free(osdialog_filter_patterns* patterns) {
 	OSDIALOG_FREE(patterns);
 	osdialog_filter_patterns_free(next);
 }
+
 
 void osdialog_filters_free(osdialog_filters* filters) {
 	if (!filters)
@@ -107,12 +111,37 @@ void osdialog_filters_free(osdialog_filters* filters) {
 }
 
 
+static osdialog_filter_patterns* osdialog_filter_patterns_copy(const osdialog_filter_patterns* src) {
+	if (!src)
+		return NULL;
+
+	osdialog_filter_patterns* dest = OSDIALOG_MALLOC(sizeof(osdialog_filter_patterns));
+	dest->pattern = osdialog_strdup(src->pattern);
+	dest->next = osdialog_filter_patterns_copy(src->next);
+	return dest;
+}
+
+
+osdialog_filters* osdialog_filters_copy(const osdialog_filters* src) {
+	if (!src)
+		return NULL;
+
+	osdialog_filters* dest = OSDIALOG_MALLOC(sizeof(osdialog_filters));
+	dest->name = osdialog_strdup(src->name);
+	dest->patterns = osdialog_filter_patterns_copy(src->patterns);
+	dest->next = osdialog_filters_copy(src->next);
+	return dest;
+}
+
+
 osdialog_save_callback osdialog_save_cb = NULL;
 osdialog_restore_callback osdialog_restore_cb = NULL;
+
 
 void osdialog_set_save_callback(osdialog_save_callback cb) {
 	osdialog_save_cb = cb;
 }
+
 
 void osdialog_set_restore_callback(osdialog_restore_callback cb) {
 	osdialog_restore_cb = cb;
