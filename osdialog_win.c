@@ -506,7 +506,7 @@ void osdialog_file_async(osdialog_file_action action, const char* dir, const cha
 }
 
 
-int osdialog_color_picker(osdialog_color* color, int opacity) {
+int osdialog_color_picker_impl(osdialog_color* color, int opacity, HWND window) {
 	(void) opacity;
 	SAVE_CALLBACK
 
@@ -517,10 +517,11 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 	ZeroMemory(&cc, sizeof(cc));
 
 	COLORREF c = RGB(color->r, color->g, color->b);
-	static COLORREF acrCustClr[16];
+	static COLORREF customColors[16];
 
 	cc.lStructSize = sizeof(cc);
-	cc.lpCustColors = (LPDWORD) acrCustClr;
+	cc.hwndOwner = window;
+	cc.lpCustColors = (LPDWORD) customColors;
 	cc.rgbResult = c;
 	cc.Flags = CC_FULLOPEN | CC_ANYCOLOR | CC_RGBINIT;
 
@@ -540,17 +541,23 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 }
 
 
+int osdialog_color_picker(osdialog_color* color, int opacity) {
+	return osdialog_color_picker_impl(color, opacity, GetActiveWindow());
+}
+
+
 typedef struct {
 	osdialog_color color;
 	int opacity;
 	osdialog_color_picker_callback cb;
 	void* user;
+	HWND window;
 } osdialog_color_picker_data;
 
 
 static DWORD WINAPI osdialog_color_picker_async_thread_proc(void* ptr) {
 	osdialog_color_picker_data* data = (osdialog_color_picker_data*) ptr;
-	int result = osdialog_color_picker(&data->color, data->opacity);
+	int result = osdialog_color_picker_impl(&data->color, data->opacity, data->window);
 	if (data->cb)
 		data->cb(result, data->color, data->user);
 
@@ -565,6 +572,7 @@ void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_col
 	data->opacity = opacity;
 	data->cb = cb;
 	data->user = user;
+	data->window = GetActiveWindow();
 
 	HANDLE thread = CreateThread(NULL, 0, osdialog_color_picker_async_thread_proc, data, 0, NULL);
 	if (!thread) {
