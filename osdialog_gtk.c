@@ -422,9 +422,7 @@ void osdialog_file_async(osdialog_file_action action, const char* dir, const cha
 }
 
 
-static GtkWidget* color_picker_create(osdialog_color* color, int opacity) {
-	if (!color)
-		return NULL;
+static GtkWidget* color_picker_create(osdialog_color color, int opacity) {
 	if (!GTK_INIT)
 		return NULL;
 
@@ -435,21 +433,21 @@ static GtkWidget* color_picker_create(osdialog_color* color, int opacity) {
 	gtk_color_selection_set_has_opacity_control(colorsel, opacity);
 	GdkColor c;
 	// uint8_t to uint16_t
-	c.red = (uint16_t) color->r * 257;
-	c.green = (uint16_t) color->g * 257;
-	c.blue = (uint16_t) color->b * 257;
+	c.red = (uint16_t) color.r * 257;
+	c.green = (uint16_t) color.g * 257;
+	c.blue = (uint16_t) color.b * 257;
 	gtk_color_selection_set_current_color(colorsel, &c);
-	gtk_color_selection_set_current_alpha(colorsel, (uint16_t) color->a * 257);
+	gtk_color_selection_set_current_alpha(colorsel, (uint16_t) color.a * 257);
 #elif GTK_MAJOR_VERSION == 3
 	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);
 	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
 	gtk_color_chooser_set_use_alpha(colorsel, opacity);
 	GdkRGBA c;
 	// uint8_t to float
-	c.red = color->r / 255.0;
-	c.green = color->g / 255.0;
-	c.blue = color->b / 255.0;
-	c.alpha = color->a / 255.0;
+	c.red = color.r / 255.0;
+	c.green = color.g / 255.0;
+	c.blue = color.b / 255.0;
+	c.alpha = color.a / 255.0;
 	gtk_color_chooser_set_rgba(colorsel, &c);
 #else // GTK_MAJOR_VERSION == 4
 	// TODO
@@ -489,9 +487,12 @@ static void color_picker_get_color(GtkWidget* dialog, osdialog_color* color) {
 
 
 int osdialog_color_picker(osdialog_color* color, int opacity) {
+	if (!color)
+		return 0;
+
 	SAVE_CALLBACK
 
-	GtkWidget* dialog = color_picker_create(color, opacity);
+	GtkWidget* dialog = color_picker_create(*color, opacity);
 	if (!dialog) {
 		RESTORE_CALLBACK
 		return 0;
@@ -523,7 +524,6 @@ typedef struct {
 	osdialog_color_picker_callback cb;
 	void* user;
 	void* context;
-	osdialog_color* color;
 } osdialog_color_picker_data;
 
 
@@ -531,9 +531,10 @@ typedef struct {
 static void color_picker_response(GtkDialog* dialog, gint response, gpointer ptr) {
 	osdialog_color_picker_data* data = ptr;
 
+	osdialog_color color = {0, 0, 0, 0};
 	int result = (response == GTK_RESPONSE_OK);
 	if (response == GTK_RESPONSE_OK) {
-		color_picker_get_color(GTK_WIDGET(dialog), data->color);
+		color_picker_get_color(GTK_WIDGET(dialog), &color);
 	}
 
 	gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -542,21 +543,21 @@ static void color_picker_response(GtkDialog* dialog, gint response, gpointer ptr
 	RESTORE_CALLBACK
 
 	if (data->cb)
-		data->cb(result, data->user);
+		data->cb(result, color, data->user);
 
 	OSDIALOG_FREE(data);
 }
 #endif
 
 
-void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_color_picker_callback cb, void* user) {
+void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback cb, void* user) {
 	SAVE_CALLBACK
 
 	GtkWidget* dialog = color_picker_create(color, opacity);
 	if (!dialog) {
 		RESTORE_CALLBACK
 		if (cb)
-			cb(0, user);
+			cb(0, color, user);
 		return;
 	}
 
@@ -564,7 +565,6 @@ void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_co
 	data->cb = cb;
 	data->user = user;
 	data->context = context;
-	data->color = color;
 
 #if GTK_MAJOR_VERSION <= 3
 	g_signal_connect(dialog, "response", G_CALLBACK(color_picker_response), data);

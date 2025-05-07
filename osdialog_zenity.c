@@ -347,10 +347,10 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 }
 
 
-void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_color_picker_callback cb, void* user) {
+void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback cb, void* user) {
 	// Fake async placeholder
-	int result = osdialog_color_picker(color, opacity);
+	int result = osdialog_color_picker(&color, opacity);
 	if (cb) {
-		cb(result, user);
+		cb(result, color, user);
 	}
 }

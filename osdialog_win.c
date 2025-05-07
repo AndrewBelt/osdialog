@@ -541,7 +541,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 
 
 typedef struct {
-	osdialog_color* color;
+	osdialog_color color;
 	int opacity;
 	osdialog_color_picker_callback cb;
 	void* user;
@@ -550,16 +550,16 @@ typedef struct {
 
 static DWORD WINAPI osdialog_color_picker_async_thread_proc(void* ptr) {
 	osdialog_color_picker_data* data = (osdialog_color_picker_data*) ptr;
-	const int result = osdialog_color_picker(data->color, data->opacity);
+	int result = osdialog_color_picker(&data->color, data->opacity);
 	if (data->cb)
-		data->cb(result, data->user);
+		data->cb(result, data->color, data->user);
 
 	OSDIALOG_FREE(data);
 	return 0;
 }
 
 
-void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_color_picker_callback cb, void* user) {
+void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback cb, void* user) {
 	osdialog_color_picker_data* data = OSDIALOG_MALLOC(sizeof(osdialog_color_picker_data));
 	data->color = color;
 	data->opacity = opacity;
@@ -570,6 +570,6 @@ void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_co
 	if (!thread) {
 		OSDIALOG_FREE(data);
 		if (cb)
-			cb(0, user);
+			cb(0, color, user);
 	}
 }

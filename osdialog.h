@@ -129,9 +129,9 @@ Returns 1 if "OK" was pressed.
 */
 int osdialog_color_picker(osdialog_color* color, int opacity);
 
-typedef void (*osdialog_color_picker_callback)(int result, void* user);
+typedef void (*osdialog_color_picker_callback)(int result, osdialog_color color, void* user);
 
-void osdialog_color_picker_async(osdialog_color* color, int opacity, osdialog_color_picker_callback cb, void* user);
+void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback cb, void* user);
 
 
 typedef void* (*osdialog_save_callback)();
