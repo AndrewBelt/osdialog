@@ -134,7 +134,7 @@ typedef void (*osdialog_color_picker_callback)(int result, osdialog_color color,
 void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_color_picker_callback cb, void* user);
 
 
-typedef void* (*osdialog_save_callback)();
+typedef void* (*osdialog_save_callback)(void);
 typedef void (*osdialog_restore_callback)(void* ptr);
 
 /** Sets callback that is called before each dialog is opened.
