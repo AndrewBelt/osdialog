@@ -86,7 +86,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 typedef struct {
 	osdialog_message_level level;
 	osdialog_message_buttons buttons;
-	const char* message;
+	char* message;
 	osdialog_message_callback cb;
 	void* user;
 	HWND window;
@@ -94,8 +94,8 @@ typedef struct {
 
 
 static DWORD WINAPI osdialog_message_async_thread_proc(void* ptr) {
-	osdialog_message_data* data = (osdialog_message_data*)ptr;
-	const int result = osdialog_message_impl(data->level, data->buttons, data->message, data->window);
+	osdialog_message_data* data = (osdialog_message_data*) ptr;
+	int result = osdialog_message_impl(data->level, data->buttons, data->message, data->window);
 	if (data->cb)
 		data->cb(result, data->user);
 
@@ -296,8 +296,8 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 
 typedef struct {
 	osdialog_message_level level;
-	const char* message;
-	const char* text;
+	char* message;
+	char* text;
 	osdialog_prompt_callback cb;
 	void* user;
 	HWND window;
@@ -305,8 +305,8 @@ typedef struct {
 
 
 static DWORD WINAPI osdialog_prompt_async_thread_proc(void* ptr) {
-	osdialog_prompt_data* data = (osdialog_prompt_data*)ptr;
-	const char* result = osdialog_prompt_impl(data->level, data->message, data->text, data->window);
+	osdialog_prompt_data* data = (osdialog_prompt_data*) ptr;
+	char* result = osdialog_prompt_impl(data->level, data->message, data->text, data->window);
 	if (data->cb)
 		data->cb(result, data->user);
 
@@ -461,9 +461,9 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 
 typedef struct {
 	osdialog_file_action action;
-	const char* dir;
-	const char* filename;
-	const osdialog_filters* filters;
+	char* dir;
+	char* filename;
+	osdialog_filters* filters;
 	osdialog_file_callback cb;
 	void* user;
 	HWND window;
@@ -471,8 +471,8 @@ typedef struct {
 
 
 static DWORD WINAPI osdialog_file_async_thread_proc(void* ptr) {
-	osdialog_file_data* data = (osdialog_file_data*)ptr;
-	const char* result = osdialog_file_impl(data->action, data->dir, data->filename, data->filters, data->window);
+	osdialog_file_data* data = (osdialog_file_data*) ptr;
+	char* result = osdialog_file_impl(data->action, data->dir, data->filename, data->filters, data->window);
 	if (data->cb)
 		data->cb(result, data->user);
 
@@ -549,7 +549,7 @@ typedef struct {
 
 
 static DWORD WINAPI osdialog_color_picker_async_thread_proc(void* ptr) {
-	osdialog_color_picker_data* data = (osdialog_color_picker_data*)ptr;
+	osdialog_color_picker_data* data = (osdialog_color_picker_data*) ptr;
 	const int result = osdialog_color_picker(data->color, data->opacity);
 	if (data->cb)
 		data->cb(result, data->user);
