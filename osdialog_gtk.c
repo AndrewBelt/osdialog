@@ -573,3 +573,8 @@ void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_col
 	// TODO
 #endif
 }
+
+
+void osdialog_notification(const char* text, const char* title) {
+	// TODO Implement with GLib 2.4.0+ g_notification_new(), or libnotify
+}

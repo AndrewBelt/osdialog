@@ -354,3 +354,21 @@ void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_col
 		cb(result, color, user);
 	}
 }
+
+
+void osdialog_notification(const char* text, const char* title) {
+	// title is not used
+	(void) title;
+
+	char* args[32];
+	int argIndex = 0;
+
+	args[argIndex++] = osdialog_strdup(zenityBin);
+	args[argIndex++] = osdialog_strdup("--notification");
+	args[argIndex++] = osdialog_strdup("--text");
+	args[argIndex++] = osdialog_strdup(text ? text : "");
+	args[argIndex++] = NULL;
+
+	string_list_exec(zenityBin, (const char* const*) args, NULL, 0, NULL, 0);
+	string_list_clear(args);
+}

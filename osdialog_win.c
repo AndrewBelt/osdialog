@@ -581,3 +581,9 @@ void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_col
 			cb(0, color, user);
 	}
 }
+
+
+void osdialog_notification(const char* text, const char* title) {
+	// TODO
+	// Might need to use C++17 for WinRT.
+}
