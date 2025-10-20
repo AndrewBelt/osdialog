@@ -389,3 +389,17 @@ void osdialog_color_picker_async(osdialog_color color, int opacity, osdialog_col
 		cb(result, color, user);
 	}
 }
+
+
+void osdialog_notification(const char* text, const char* title) {
+	NSUserNotification* notification = [[NSUserNotification alloc] init];
+	// If title is NULL, the app name is used.
+	// If text is NULL, the title takes its place.
+	// If both arguments are NULL, the notification will not show.
+	notification.informativeText = text ? [NSString stringWithUTF8String:text] : @"";
+	notification.title = title ? [NSString stringWithUTF8String:title] : @"";
+	notification.soundName = NSUserNotificationDefaultSoundName;
+
+	[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+	[notification release];
+}

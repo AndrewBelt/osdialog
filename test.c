@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <semaphore.h>
+#include <unistd.h>
 #include "osdialog.h"
 
 
@@ -218,6 +219,12 @@ int main(int argc, char* argv[]) {
 		osdialog_color_picker_async(color, 1, color_picker_callback, NULL);
 		sem_wait(&semaphore);
 		sem_destroy(&semaphore);
+	}
+
+	// Notification
+	if (test < 0 || test == 14) {
+		fprintf(stderr, "notification\n");
+		osdialog_notification("Hello world", "Insert title here");
 	}
 
 	fprintf(stderr, "done\n");
